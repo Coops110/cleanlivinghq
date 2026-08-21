@@ -1,0 +1,146 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE, LEGAL } from '../lib/site.js';
+
+const title = 'Terms & Conditions';
+const description =
+  'The terms on which this website is provided, including the important limits on the health and safety information it carries.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical="/terms"
+  breadcrumbs={[{ name: 'Terms & conditions', href: '/terms' }]}
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="eyebrow">Legal</p>
+      <h1>Terms &amp; conditions</h1>
+      <p class="lede">Last updated {LEGAL.lastUpdated}.</p>
+    </header>
+
+    <div class="prose">
+      <section aria-labelledby="who">
+        <h2 id="who">1. Who we are</h2>
+        <p>
+          This website is operated by {LEGAL.legalName}
+          {LEGAL.entityType === 'sole-trader' ? ', a sole trader' : ', a registered company'}
+          {LEGAL.address && <span>, of {LEGAL.address}</span>}. Contact:
+          <a href={`mailto:${SITE.email}`}> {SITE.email}</a>.
+        </p>
+        <p>By using this site you accept these terms. If you do not, please do not use it.</p>
+      </section>
+
+      <section aria-labelledby="nature">
+        <h2 id="nature">2. What this site is</h2>
+        <p>
+          CleanLivingHQ publishes information and opinion about consumer
+          products, and earns affiliate commission on some outbound links. See
+          our <a href="/affiliate-disclosure">affiliate disclosure</a>.
+        </p>
+        <p>
+          <strong>We do not sell anything.</strong> We are not a retailer. Every
+          purchase is a contract between you and the retailer, on their terms.
+          Delivery, payment, returns, refunds, warranty and consumer-rights
+          claims are all matters for them, not us.
+        </p>
+      </section>
+
+      <section aria-labelledby="health">
+        <h2 id="health">3. Health and safety information</h2>
+        <div class="note note-vet">
+          <span class="note-title">This matters more than the rest of this page</span>
+          <p class="mb-0">
+            Our content on heat illness, sun exposure and skincare is
+            <strong>general information for a general audience</strong>. It is
+            not medical advice and not occupational-health advice, and it does
+            not create a professional relationship of any kind.
+          </p>
+        </div>
+        <ul>
+          <li>
+            For yourself or another person: consult a pharmacist, doctor or
+            emergency services. Suspected heat stroke is an emergency — call 999
+            in the UK or 911 in the US.
+          </li>
+          <li>
+            At work: your employer's risk assessment and heat plan take
+            precedence over anything on this site, as does HSE, OSHA or NIOSH
+            guidance.
+          </li>
+        </ul>
+        <p>
+          Our calculators, including the
+          <a href="/tools/heat-index">heat risk calculator</a>, are indicative
+          tools using published formulae and rules of thumb. They do not account
+          for direct sun, exertion, PPE, acclimatisation or individual health,
+          and they must not be used as the sole basis for a safety decision.
+        </p>
+      </section>
+
+      <section aria-labelledby="accuracy">
+        <h2 id="accuracy">4. Accuracy</h2>
+        <p>
+          We take care to be accurate, and product specifications, prices and
+          availability change without notice and are controlled by the retailer,
+          not by us. Always check the current details on the retailer's own page
+          before buying. We give no warranty that the site is error-free or
+          continuously available.
+        </p>
+      </section>
+
+      <section aria-labelledby="ip">
+        <h2 id="ip">5. Intellectual property</h2>
+        <p>
+          The content of this site is owned by us or our licensors. You may read,
+          print and share it for your own non-commercial use. You may not
+          republish, sell or systematically copy it, or use it to train a
+          commercial model, without our written permission. Quoting a short
+          extract with a link back is fine and welcome.
+        </p>
+        <p>Trade marks and product names belong to their respective owners.</p>
+      </section>
+
+      <section aria-labelledby="liability">
+        <h2 id="liability">6. Liability</h2>
+        <p>
+          To the extent permitted by law, we are not liable for loss arising from
+          your use of this site or from any product you buy through it,
+          including indirect or consequential loss.
+        </p>
+        <p>
+          <strong>Nothing in these terms limits or excludes our liability for
+          death or personal injury caused by our negligence, for fraud, or for
+          anything else that cannot lawfully be limited.</strong> If you are a
+          consumer, your statutory rights are unaffected.
+        </p>
+      </section>
+
+      <section aria-labelledby="links">
+        <h2 id="links">7. Links out</h2>
+        <p>
+          We link to other websites. We do not control them and are not
+          responsible for their content, products or privacy practices.
+        </p>
+      </section>
+
+      <section aria-labelledby="law">
+        <h2 id="law">8. Governing law</h2>
+        <p>
+          These terms are governed by the law of {LEGAL.governingLaw}, and the
+          courts of {LEGAL.governingLaw} have jurisdiction. If you are a consumer
+          resident elsewhere, you keep the benefit of any mandatory protections
+          of your own country's law.
+        </p>
+      </section>
+
+      <section aria-labelledby="changes">
+        <h2 id="changes">9. Changes</h2>
+        <p>
+          We may update these terms. The date at the top shows when they last
+          changed, and continued use after a change means you accept it.
+        </p>
+      </section>
+    </div>
+  </div>
+</BaseLayout>

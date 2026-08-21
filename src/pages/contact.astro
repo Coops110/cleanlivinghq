@@ -1,0 +1,83 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE, SOCIAL } from '../lib/site.js';
+
+const title = 'Contact';
+const description =
+  'How to reach CleanLivingHQ — corrections, questions, data requests and partnership enquiries.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical="/contact"
+  breadcrumbs={[{ name: 'Contact', href: '/contact' }]}
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="eyebrow">Get in touch</p>
+      <h1>Contact</h1>
+      <p class="lede">
+        One address, read by a person. No contact form, because a form would
+        mean collecting your data through a third party for no benefit to you.
+      </p>
+    </header>
+
+    <div class="prose">
+      <p class="contact-email">
+        <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+      </p>
+
+      <section aria-labelledby="what">
+        <h2 id="what">What to expect</h2>
+        <ul>
+          <li>
+            <strong>Corrections.</strong> The most welcome kind of email,
+            particularly on the heat-safety pages. We will fix the page
+            and say that we did.
+          </li>
+          <li>
+            <strong>Questions about a product.</strong> Happy to help, though for
+            order status, delivery or returns you need the retailer — we are not
+            the seller. See our <a href="/terms">terms</a>.
+          </li>
+          <li>
+            <strong>Data protection requests.</strong> Access, deletion or any
+            other right under our <a href="/privacy">privacy policy</a>. We
+            respond within one month.
+          </li>
+          <li>
+            <strong>Brands and partnerships.</strong> Read the
+            <a href="/editorial-policy"> editorial policy</a> first. We do not
+            accept payment for reviews or rankings, so if that is the enquiry,
+            the answer is already no.
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="social">
+        <h2 id="social">Social</h2>
+        <p>
+          We post as {SOCIAL.handle} on
+          <a href={SOCIAL.tiktok} rel="me noopener"> TikTok</a>,
+          <a href={SOCIAL.instagram} rel="me noopener"> Instagram</a> and
+          <a href={SOCIAL.facebook} rel="me noopener"> Facebook</a>. Anything
+          with a commercial relationship behind it is labelled #Ad.
+        </p>
+      </section>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .contact-email {
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 5vw, 1.75rem);
+    font-weight: 750;
+    background: var(--mist);
+    border-left: 5px solid var(--coral);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: var(--s5);
+    max-width: var(--measure);
+    word-break: break-word;
+  }
+</style>

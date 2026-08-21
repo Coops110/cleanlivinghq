@@ -1,0 +1,118 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { LEGAL, GA_ID, CONSENT_STORAGE_KEY } from '../lib/site.js';
+
+const title = 'Cookie Policy';
+const description =
+  'Which cookies this site sets, what each one does, how long it lasts, and how to change or withdraw your consent.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical="/cookies"
+  breadcrumbs={[{ name: 'Cookie policy', href: '/cookies' }]}
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="eyebrow">Legal</p>
+      <h1>Cookie policy</h1>
+      <p class="lede">Last updated {LEGAL.lastUpdated}.</p>
+    </header>
+
+    <div class="prose">
+      {GA_ID ? (
+        <>
+          <section aria-labelledby="what">
+            <h2 id="what">What we set</h2>
+            <p>
+              Only two things, and one of them only after you say yes.
+            </p>
+            <div class="table-scroll">
+              <table>
+                <caption class="sr-only">Cookies and local storage used by this site</caption>
+                <thead>
+                  <tr><th scope="col">Name</th><th scope="col">Type</th><th scope="col">Purpose</th><th scope="col">Duration</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row"><code>{CONSENT_STORAGE_KEY}</code></th>
+                    <td>Local storage — strictly necessary</td>
+                    <td>Remembers your cookie choice so we stop asking.</td>
+                    <td>Until you clear site data</td>
+                  </tr>
+                  <tr>
+                    <th scope="row"><code>_ga</code>, <code>_ga_*</code></th>
+                    <td>Analytics — consent required</td>
+                    <td>Google Analytics 4. Distinguishes visitors and sessions.</td>
+                    <td>Up to 2 years</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p>
+              The consent record is strictly necessary and does not itself need
+              consent — without it we would have to ask you on every page.
+            </p>
+          </section>
+
+          <section aria-labelledby="control">
+            <h2 id="control">Changing your mind</h2>
+            <p>
+              Use the <strong>Cookie settings</strong> link in the footer of any
+              page. Withdrawing consent is as easy as giving it, which is a legal
+              requirement and also just reasonable.
+            </p>
+            <p>
+              You can also clear cookies and site data in your browser settings,
+              or block them entirely. The site works fine either way — nothing
+              here depends on analytics.
+            </p>
+          </section>
+
+          <section aria-labelledby="how">
+            <h2 id="how">How consent is enforced</h2>
+            <p>
+              We use Google Consent Mode v2 with every storage type denied by
+              default. The denial is set before the Google tag loads, so on a
+              first visit no analytics cookie is set at all, rather than being
+              set and later deleted.
+            </p>
+          </section>
+        </>
+      ) : (
+        <>
+          <section aria-labelledby="none">
+            <h2 id="none">This site does not set cookies</h2>
+            <p>
+              <strong>No analytics, no advertising, no tracking cookies.</strong>
+              We do not run Google Analytics or any equivalent, so there is no
+              cookie banner — there is nothing to consent to.
+            </p>
+            <p>
+              Your browser may still store things a website cannot control, and
+              our host keeps standard server logs, which are covered in the
+              <a href="/privacy"> privacy policy</a>.
+            </p>
+            <p>
+              If we ever add analytics, this page will change to list exactly
+              what is set, and a consent banner will appear before anything is
+              stored. Both are generated from a single configuration value, so
+              this page cannot claim we set no cookies while we are setting them.
+            </p>
+          </section>
+        </>
+      )}
+
+      <section aria-labelledby="third">
+        <h2 id="third">Other sites</h2>
+        <p>
+          When you follow an affiliate link, the retailer may set its own
+          cookies, including one recording that the visit came from us. That is
+          governed by their cookie and privacy policies. See our
+          <a href="/affiliate-disclosure"> affiliate disclosure</a> for what we
+          send and why.
+        </p>
+      </section>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,92 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { CATEGORIES } from '../../lib/products.js';
+
+const all = (await getCollection('guides', ({ data }) => !data.noindex))
+  .sort((a, b) => b.data.published.localeCompare(a.data.published));
+
+// Pillar labels. 'heat' has no product category of its own — it is an
+// editorial pillar, which is deliberate: heat-safety searches are the
+// highest-intent traffic on the site and they are not shopping queries.
+const PILLARS = {
+  cooling: { name: CATEGORIES.cooling.short, href: CATEGORIES.cooling.href },
+  heat: { name: 'Heat safety', href: '/heat-safety' },
+  skin: { name: CATEGORIES.skin.short, href: CATEGORIES.skin.href },
+};
+
+const grouped = Object.entries(PILLARS).map(([key, meta]) => ({
+  key,
+  ...meta,
+  posts: all.filter((p) => p.data.pillar === key),
+}));
+
+const title = 'Guides';
+const description =
+  'Every guide we have published on cooling towels, working safely in heat and natural skincare — grouped by the pillar it belongs to.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical="/guides"
+  breadcrumbs={[{ name: 'Guides', href: '/guides' }]}
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="eyebrow">{all.length} guides</p>
+      <h1>Guides</h1>
+      <p class="lede">
+        Grouped by the pillar each one belongs to. Every guide links back to its
+        pillar page, and every pillar page links down to its guides — that is how
+        the site is meant to be read, and how search engines make sense of it.
+        New pillars appear here automatically as ranges are added.
+      </p>
+    </header>
+
+    {grouped.map((group) => (
+      <section aria-labelledby={`g-${group.key}`}>
+        <h2 id={`g-${group.key}`}>
+          <a href={group.href}>{group.name}</a>
+        </h2>
+        {group.posts.length === 0 ? (
+          <p class="muted">
+            No guides published in this pillar yet. The
+            <a href={group.href}> pillar page</a> is live.
+          </p>
+        ) : (
+          <ul class="guide-cards">
+            {group.posts.map((p) => (
+              <li class="guide-card">
+                <h3><a href={`/guides/${p.id}`}>{p.data.title}</a></h3>
+                <p>{p.data.description}</p>
+                <p class="guide-meta">
+                  <time datetime={p.data.published}>
+                    {new Date(p.data.published).toLocaleDateString('en-GB', {
+                      day: 'numeric', month: 'long', year: 'numeric',
+                    })}
+                  </time>
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    ))}
+  </div>
+</BaseLayout>
+
+<style>
+  .guide-cards { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s4); }
+  @media (min-width: 46em) { .guide-cards { grid-template-columns: repeat(2, 1fr); } }
+  .guide-card {
+    background: #fff; border: 1px solid var(--line);
+    border-left: 4px solid var(--azure);
+    border-radius: var(--radius); padding: var(--s5);
+    box-shadow: var(--shadow);
+  }
+  .guide-card h3 { margin: 0 0 var(--s2); font-size: 1.125rem; }
+  .guide-card h3 a { color: var(--ink); text-decoration: none; }
+  .guide-card h3 a:hover { color: var(--azure-dark); text-decoration: underline; }
+  .guide-card p { margin: 0 0 var(--s3); color: var(--slate); font-size: 0.9375rem; }
+  .guide-meta { font-size: 0.8125rem; margin-bottom: 0; }
+</style>

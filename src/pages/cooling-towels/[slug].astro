@@ -1,0 +1,215 @@
+---
+/**
+ * Product detail — cooling towels.
+ *
+ * THE OFFER GATE. Product structured data is emitted WITHOUT an `offers`
+ * block while PRICES_CONFIRMED is false. This is not caution for its own
+ * sake: Google checks a marked-up price against the price the user lands on,
+ * and a mismatch earns a manual action against the site's rich results.
+ * Omitting `offers` is valid schema. A wrong `offers` is a false claim.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AffiliateLink from '../../components/AffiliateLink.astro';
+import Disclosure from '../../components/Disclosure.astro';
+import { byCategory, bySlug, CATEGORIES, NEED_LABELS } from '../../lib/products.js';
+import { SITE, PRICES_CONFIRMED, formatPrice, MERCHANTS } from '../../lib/site.js';
+
+export async function getStaticPaths() {
+  return byCategory('cooling').map((p) => ({ params: { slug: p.slug }, props: { product: p } }));
+}
+
+const { product } = Astro.props;
+const cat = CATEGORIES.cooling;
+const others = byCategory('cooling').filter((p) => p.slug !== product.slug);
+const merchant = product.merchant ? MERCHANTS[product.merchant] : null;
+const url = `${SITE.domain}/cooling-towels/${product.slug}`;
+
+const schema = [{
+  '@type': 'Product',
+  '@id': `${url}#product`,
+  name: product.name,
+  description: product.summary,
+  image: new URL(product.image, SITE.domain).toString(),
+  category: cat.name,
+  material: product.material || undefined,
+  ...(PRICES_CONFIRMED && merchant
+    ? {
+        offers: {
+          '@type': 'Offer',
+          price: product.price.gbp.toFixed(2),
+          priceCurrency: 'GBP',
+          availability: 'https://schema.org/InStock',
+          seller: { '@type': 'Organization', name: merchant.name },
+          url,
+        },
+      }
+    : {}),
+}];
+
+const title = product.name;
+const description = product.summary.slice(0, 155);
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={`/cooling-towels/${product.slug}`}
+  image={product.image}
+  ogType="product"
+  breadcrumbs={[
+    { name: 'Cooling towels', href: '/cooling-towels' },
+    { name: product.name, href: `/cooling-towels/${product.slug}` },
+  ]}
+  schema={schema}
+>
+  <div class="wrap">
+    <div class="pdp">
+      <div class="pdp-media">
+        <img
+          src={product.image}
+          alt={product.imageAlt}
+          width="800" height="800"
+          fetchpriority="high" decoding="async"
+        />
+        <p class="ph-note">
+          Placeholder image. Product photography is swapped in before launch —
+          see the asset checklist in the project README.
+        </p>
+      </div>
+
+      <div class="pdp-info">
+        <p class="eyebrow"><a href="/cooling-towels">{cat.short}</a></p>
+        <h1>{product.name}</h1>
+        <p class="lede">{product.summary}</p>
+
+        <p class="pdp-price">
+          {formatPrice(product)}
+          {!PRICES_CONFIRMED && (
+            <span class="pdp-price-note">Pricing is confirmed at launch.</span>
+          )}
+        </p>
+
+        <Disclosure />
+
+        {merchant && (
+          <AffiliateLink
+            merchant={product.merchant}
+            path={product.merchantPath}
+            label={`Buy at ${merchant.name}`}
+            variant="accent"
+            block={true}
+          />
+        )}
+
+        <dl class="specs">
+          {product.material && (<><dt>Material</dt><dd>{product.material}</dd></>)}
+          {product.size && (<><dt>Size</dt><dd>{product.size}</dd></>)}
+          {product.packSize && (<><dt>Pack</dt><dd>{product.packSize} {product.packSize === 1 ? 'towel' : 'towels'}</dd></>)}
+          {product.coolingMinutes && (
+            <><dt>Quoted cooling</dt><dd>~{product.coolingMinutes} min <span class="muted">(manufacturer figure — depends heavily on humidity)</span></dd></>
+          )}
+          {product.dryFeel && (<><dt>When fully dry</dt><dd>{product.dryFeel === 'stiff' ? 'Stiff — re-wet to soften' : 'Stays soft'}</dd></>)}
+        </dl>
+      </div>
+    </div>
+
+    <div class="prose">
+      <section aria-labelledby="good">
+        <h2 id="good">What it does well</h2>
+        <ul>
+          {product.features.map((f) => <li>{f}</li>)}
+        </ul>
+      </section>
+
+      <section aria-labelledby="know">
+        <h2 id="know">What to know before you buy</h2>
+        <div class="note note-warn">
+          <ul class="mb-0">
+            {product.caveats.map((c) => <li>{c}</li>)}
+          </ul>
+        </div>
+        <p>
+          None of this is a reason not to buy it. It is the information a product
+          page usually leaves out, and it is what stops you being disappointed —
+          particularly the humidity point, which is the single biggest driver of
+          negative reviews in this category. See
+          <a href="/guides/why-cooling-towels-fail-in-humidity"> why cooling towels underperform in humid heat</a>.
+        </p>
+      </section>
+
+      <section aria-labelledby="for">
+        <h2 id="for">Best suited to</h2>
+        <ul class="tags">
+          {product.bestFor.map((b) => <li class="badge">{NEED_LABELS[b] || b}</li>)}
+        </ul>
+        <p>
+          Not sure this is the right one? The
+          <a href="/tools/product-finder"> towel finder</a> asks three questions
+          and matches you, or compare the whole range on the
+          <a href="/compare/cooling-towels"> comparison table</a>.
+        </p>
+      </section>
+
+      <section aria-labelledby="care">
+        <h2 id="care">Looking after it</h2>
+        <p>
+          Rinse in clean water after use, wring it out, and either dry it fully
+          or store it damp in a genuinely airtight container. What ruins a
+          cooling towel is the middle option — damp, folded, forgotten in a bag —
+          which is how mildew starts. Full routine:
+          <a href="/guides/how-to-clean-a-cooling-towel"> how to clean and store a cooling towel</a>.
+        </p>
+      </section>
+    </div>
+
+    <section aria-labelledby="others">
+      <h2 id="others">Others in the range</h2>
+      <ul class="others">
+        {others.map((o) => (
+          <li>
+            <a href={`/cooling-towels/${o.slug}`}>{o.name}</a>
+            <span class="muted"> — {o.summary}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .pdp { display: grid; gap: var(--s5); grid-template-columns: 1fr; margin-bottom: var(--s7); padding-top: var(--s5); }
+  @media (min-width: 54em) { .pdp { grid-template-columns: 1fr 1fr; gap: var(--s7); align-items: start; } }
+
+  .pdp-media img {
+    width: 100%; aspect-ratio: 1 / 1; object-fit: cover;
+    border-radius: var(--radius); border: 1px solid var(--line); background: var(--mist);
+  }
+  .ph-note { font-size: 0.8125rem; color: var(--slate); margin-top: var(--s2); }
+
+  .pdp-info h1 { margin-bottom: var(--s3); }
+  .eyebrow a { color: inherit; }
+  .pdp-price {
+    font-family: var(--font-display);
+    font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;
+    margin: var(--s4) 0;
+  }
+  .pdp-price-note {
+    display: block; font-family: var(--font-body);
+    font-size: 0.875rem; font-weight: 400; color: var(--slate);
+  }
+
+  .specs {
+    display: grid; grid-template-columns: auto 1fr;
+    gap: var(--s2) var(--s4);
+    margin: var(--s5) 0 0;
+    font-size: 0.9375rem;
+    border-top: 1px solid var(--line);
+    padding-top: var(--s4);
+  }
+  .specs dt { font-weight: 700; color: var(--slate); }
+  .specs dd { margin: 0; }
+
+  .tags { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s2); max-width: var(--measure); }
+  .others { list-style: none; padding: 0; }
+  .others li { padding: var(--s3) 0; border-bottom: 1px solid var(--line); font-size: 0.9375rem; }
+  .others a { font-weight: 650; }
+</style>

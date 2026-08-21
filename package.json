@@ -1,0 +1,20 @@
+{
+  "name": "cleanlivinghq",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check:links": "node scripts/check-links.mjs",
+    "check:seo": "node scripts/check-seo.mjs",
+    "verify": "npm run build && npm run check:links && npm run check:seo",
+    "check:browser": "node scripts/check-browser.mjs"
+  },
+  "devDependencies": {
+    "astro": "^7.0.6",
+    "@astrojs/sitemap": "3.7.3",
+    "playwright-core": "^1.56.0"
+  }
+}

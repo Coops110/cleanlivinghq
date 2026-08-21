@@ -1,0 +1,187 @@
+---
+/**
+ * Comparison table.
+ *
+ * Comparison intent is the shape that converts on an affiliate site, because
+ * it cannot be satisfied by a SERP snippet — the searcher has to open the page
+ * to see the table. Contrast "what is a cooling towel", which Google answers
+ * in place and which therefore earns impressions and no clicks.
+ *
+ * Sorting is progressive enhancement: the table is fully readable and complete
+ * as static HTML, and the sort buttons only appear if the script runs.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Disclosure from '../../components/Disclosure.astro';
+import AffiliateLink from '../../components/AffiliateLink.astro';
+import { byCategory, NEED_LABELS } from '../../lib/products.js';
+import { PRICES_CONFIRMED, formatPrice, MERCHANTS } from '../../lib/site.js';
+
+const products = byCategory('cooling');
+
+const title = 'Cooling Towels Compared';
+const description =
+  'Every cooling towel in the range side by side — material, size, pack, cooling time and what each one is genuinely best at.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical="/compare/cooling-towels"
+  breadcrumbs={[
+    { name: 'Cooling towels', href: '/cooling-towels' },
+    { name: 'Compared', href: '/compare/cooling-towels' },
+  ]}
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="eyebrow">Comparison</p>
+      <h1>Cooling towels compared</h1>
+      <p class="lede">
+        Same material, same mechanism — the differences are size, pack and
+        colour. Which means the honest question is not "which is best" but
+        "which quantity do you actually need".
+      </p>
+    </header>
+
+    <Disclosure />
+
+    <div class="note">
+      <span class="note-title">Read this before the table</span>
+      <p class="mb-0">
+        Every towel here is the same PVA fabric. None cools better than another
+        in like-for-like conditions, and any site telling you otherwise is
+        inventing a difference to justify a ranking. What genuinely varies is
+        how many you get and what colour they are.
+      </p>
+    </div>
+
+    <div class="table-scroll">
+      <table id="cmp">
+        <caption class="sr-only">Cooling towels compared by material, size, pack size and cooling time</caption>
+        <thead>
+          <tr>
+            <th scope="col" data-sort="name">Towel</th>
+            <th scope="col" data-sort="price">Price</th>
+            <th scope="col" data-sort="pack">Pack</th>
+            <th scope="col" data-sort="material">Material</th>
+            <th scope="col" data-sort="size">Size</th>
+            <th scope="col">Best for</th>
+            <th scope="col">Buy</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.map((p) => (
+            <tr>
+              <th scope="row" data-v={p.name}>
+                <a href={`/cooling-towels/${p.slug}`}>{p.name}</a>
+              </th>
+              <td data-v={p.price.gbp}>
+                {formatPrice(p)}
+                {!PRICES_CONFIRMED && <span class="tbl-note">at launch</span>}
+              </td>
+              <td data-v={p.packSize}>{p.packSize}</td>
+              <td data-v={p.material}>{p.material}</td>
+              <td data-v={p.size}>{p.size}</td>
+              <td>{p.bestFor.slice(0, 3).map((b) => NEED_LABELS[b] || b).join(', ')}</td>
+              <td>
+                {p.merchant && (
+                  <AffiliateLink
+                    merchant={p.merchant}
+                    path={p.merchantPath}
+                    label="Buy"
+                    variant="accent"
+                    class="btn-sm"
+                  />
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="prose">
+      <section aria-labelledby="choose">
+        <h2 id="choose">How to actually choose</h2>
+        <p>
+          Work backwards from the number of towels you will have damp at once,
+          not from the price per towel. One person doing short sessions with a
+          tap nearby needs one. A full shift with no water source needs two —
+          one in use, one soaking in a cool box. A crew needs one each, because
+          sharing a damp towel is unpleasant and they will stop using them.
+        </p>
+        <p>
+          If you work on site, the high-visibility colourway is worth the small
+          premium purely because a dark towel round your neck works against your
+          PPE. It is not certified hi-vis, and it does not replace a compliant
+          vest — check your site rules.
+        </p>
+        <p>
+          Prefer to answer three questions instead? The
+          <a href="/tools/product-finder">towel finder</a> does the matching.
+        </p>
+      </section>
+
+      <section aria-labelledby="mech">
+        <h2 id="mech">What no towel in this table can change</h2>
+        <p>
+          All of them cool by evaporation, so all of them lose effectiveness as
+          humidity rises. If you are buying for muggy heat, read
+          <a href="/guides/why-cooling-towels-fail-in-humidity">why cooling towels underperform in humidity</a>
+          before you spend, and check
+          <a href="/tools/heat-index">the heat index</a> for where you are.
+        </p>
+        <p>
+          For the underlying material trade-off — and why you might want
+          microfibre instead of any of these — see
+          <a href="/guides/pva-vs-microfibre-cooling-towels">PVA versus microfibre</a>.
+        </p>
+      </section>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  th[data-sort] { cursor: pointer; user-select: none; }
+  th[data-sort]:hover { background: var(--tint); }
+  th[data-sort]::after { content: ' ↕'; opacity: 0.35; font-size: 0.85em; }
+  th[data-sort][aria-sort='ascending']::after { content: ' ↑'; opacity: 1; }
+  th[data-sort][aria-sort='descending']::after { content: ' ↓'; opacity: 1; }
+  .tbl-note { display: block; font-size: 0.75rem; color: var(--slate); font-weight: 400; }
+  #cmp td, #cmp th { vertical-align: top; }
+</style>
+
+<script>
+  // Progressive enhancement: without this the table is still complete and
+  // readable, just unsorted.
+  const table = document.getElementById('cmp');
+  if (table) {
+    const tbody = table.tBodies[0];
+    table.querySelectorAll('th[data-sort]').forEach((th, colIndex) => {
+      th.setAttribute('tabindex', '0');
+      th.setAttribute('role', 'columnheader');
+
+      const sort = () => {
+        const desc = th.getAttribute('aria-sort') === 'ascending';
+        table.querySelectorAll('th[data-sort]').forEach((o) => o.removeAttribute('aria-sort'));
+        th.setAttribute('aria-sort', desc ? 'descending' : 'ascending');
+
+        const rows = [...tbody.rows];
+        rows.sort((a, b) => {
+          const av = a.cells[colIndex].dataset.v ?? a.cells[colIndex].textContent.trim();
+          const bv = b.cells[colIndex].dataset.v ?? b.cells[colIndex].textContent.trim();
+          const an = parseFloat(av), bn = parseFloat(bv);
+          const cmp = Number.isFinite(an) && Number.isFinite(bn)
+            ? an - bn
+            : String(av).localeCompare(String(bv));
+          return desc ? -cmp : cmp;
+        });
+        rows.forEach((r) => tbody.appendChild(r));
+      };
+
+      th.addEventListener('click', sort);
+      th.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sort(); }
+      });
+    });
+  }
+</script>

@@ -1,0 +1,42 @@
+---
+/**
+ * The ONLY way an outbound affiliate link should be produced on this site.
+ *
+ * Three things it guarantees that a hand-written <a> does not:
+ *
+ *  1. rel="sponsored nofollow noopener" — `sponsored` is Google's required
+ *     attribute for paid or commission links. Omitting it on a monetised site
+ *     is a link-scheme problem, not a nicety.
+ *  2. A sub-id built from the page path, so the affiliate dashboard shows
+ *     WHICH page earned each click. Without it every conversion looks like it
+ *     came from the homepage and you cannot tell what is working.
+ *  3. target="_blank" with the security rel, so the merchant opening in a new
+ *     tab cannot reach back into this one.
+ *
+ * NEVER put UTM parameters on an internal link. They belong on inbound URLs
+ * only — a UTM on an internal link starts a fresh GA4 session and destroys the
+ * attribution it was added to collect.
+ */
+import { affiliateUrl, MERCHANTS } from '../lib/site.js';
+
+const { merchant, path = '/', label, variant = 'primary', block = false, class: cls = '' } = Astro.props;
+
+// Sub-id is derived from the page this link sits on, automatically.
+const subId = (Astro.url.pathname.replace(/\/$/, '') || '/home').replace(/^\//, '').replace(/\//g, '-');
+const href = affiliateUrl(merchant, path, subId);
+const m = MERCHANTS[merchant];
+---
+<a
+  href={href}
+  class:list={['btn', `btn-${variant}`, block && 'btn-block', cls]}
+  rel="sponsored nofollow noopener"
+  target="_blank"
+  data-affiliate={merchant}
+>
+  {label}
+  <span class="sr-only"> — opens {m.name} in a new tab (affiliate link)</span>
+  <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true" focusable="false" style="flex:none">
+    <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  </svg>
+</a>

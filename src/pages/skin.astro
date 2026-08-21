@@ -1,0 +1,177 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import FaqList from '../components/FaqList.astro';
+import { byCategory, CATEGORIES } from '../lib/products.js';
+import { getCollection } from 'astro:content';
+
+const products = byCategory('skin');
+const cluster = (await getCollection('guides', ({ data }) => data.pillar === 'skin' && !data.noindex))
+  .sort((a, b) => b.data.published.localeCompare(a.data.published));
+
+const faq = [
+  {
+    q: 'Does "organic" mean anything on a cosmetic label?',
+    a: 'On its own, very little — the word is not tightly controlled for cosmetics in most markets. What means something is a named certifier such as COSMOS, Soil Association, Ecocert or USDA Organic, displayed with its mark and usually a stated percentage of certified organic content. Look for the certifier, not the adjective.',
+  },
+  {
+    q: 'Why do balms have so few ingredients compared with creams?',
+    a: 'Because balms contain no water. Microbes need water to grow, so an anhydrous product does not need a preservative system, and the preservative system is a large part of what makes a cream ingredient list long. It is a difference of format, not of quality.',
+  },
+  {
+    q: 'Is "chemical-free" skincare a real thing?',
+    a: 'No. Water is a chemical, as is every oil, butter and botanical extract. The phrase has no technical meaning and is a reliable signal that a brand is writing for feeling rather than accuracy. What is meaningful is a specific claim: no added fragrance, no added preservative, a named certification.',
+  },
+  {
+    q: 'What will you publish before selling a cream?',
+    a: 'The full INCI list, the certifying body by name where the product is certified, the concentration of any ingredient we mention as a benefit, and a plain statement of what the product does not do. If we cannot get that information from a supplier, we will not list the product.',
+  },
+];
+
+const title = 'Organic Skin & Body Care';
+const description =
+  'How to read a skincare label, which certifications actually mean something, and what we will publish before we sell you a cream.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical="/skin"
+  breadcrumbs={[{ name: 'Skin', href: '/skin' }]}
+  faq={faq}
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="eyebrow">Pillar guide · Range coming soon</p>
+      <h1>Organic skin and body care, without the vocabulary games</h1>
+      <p class="lede">
+        This range is not live yet. The page is, because the standard we intend
+        to be held to is worth publishing before there is anything to sell —
+        and because you should be able to hold us to it afterwards.
+      </p>
+    </header>
+
+    <div class="prose">
+      <section aria-labelledby="standard">
+        <h2 id="standard">What we will publish for every product</h2>
+        <p>
+          Not a marketing summary. These four things, for everything we list:
+        </p>
+        <ol>
+          <li>
+            <strong>The complete INCI list</strong>, exactly as it appears on
+            the pack, in order.
+          </li>
+          <li>
+            <strong>The certifying body by name</strong> where a product is
+            certified — COSMOS, Soil Association, Ecocert, USDA Organic — with
+            the certified percentage. Not the word "organic" on its own.
+          </li>
+          <li>
+            <strong>The concentration</strong> of any ingredient we cite as a
+            benefit. If a supplier will not tell us, we will say that instead.
+          </li>
+          <li>
+            <strong>What it does not do.</strong> Every product has a boundary,
+            and stating it is more useful than another sentence about what it
+            does.
+          </li>
+        </ol>
+        <div class="note">
+          <span class="note-title">Why this is on the page before the products are</span>
+          <p>
+            Because it is easy to promise and awkward to keep. Publishing it now
+            means the standard exists in writing before there is any commercial
+            pressure on it, and you can check the first product we list against
+            it.
+          </p>
+        </div>
+      </section>
+
+      <section aria-labelledby="label">
+        <h2 id="label">Reading a label yourself</h2>
+        <p>
+          Ingredients are listed in descending order by weight down to one
+          percent, which tells you most of what you need. Below one percent the
+          order is unregulated, so a heavily advertised active near the end of a
+          long list may be there in a token amount.
+        </p>
+        <p>
+          The full method — including why <em>Butyrospermum Parkii</em> is a
+          feature rather than obfuscation, and which front-of-pack claims are
+          empty — is in
+          <a href="/guides/reading-a-skincare-ingredients-list">how to read a skincare ingredients list</a>.
+        </p>
+      </section>
+
+      <section aria-labelledby="outdoor">
+        <h2 id="outdoor">Skin that works outdoors</h2>
+        <p>
+          Our range is aimed at skin that spends its day in sun, wind and water
+          rather than at a twelve-step routine. That means barrier repair,
+          after-sun and hand care rather than actives — a different problem from
+          the one most skincare is sold to solve.
+        </p>
+        <p>
+          If your skin is taking a beating because of the conditions you work
+          in, the more useful page may be
+          <a href="/heat-safety">working safely in heat</a>, which covers
+          clothing, sun and the things that stop the damage happening.
+        </p>
+      </section>
+    </div>
+
+    <section aria-labelledby="range">
+      <h2 id="range">The range, when it lands</h2>
+      <p class="lede">
+        Nothing below is available yet, and there are no affiliate links on this
+        page because there is nothing to link to.
+      </p>
+      <div class="grid grid-2">
+        {products.map((p) => <ProductCard product={p} />)}
+      </div>
+    </section>
+
+    {cluster.length > 0 && (
+      <section aria-labelledby="cluster">
+        <h2 id="cluster">Guides in this cluster</h2>
+        <ul class="cluster-list">
+          {cluster.map((g) => (
+            <li>
+              <a href={`/guides/${g.id}`}>{g.data.title}</a>
+              <span class="muted"> — {g.data.description}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <div class="prose"><FaqList items={faq} /></div>
+
+    <section class="honesty-block" aria-labelledby="honesty">
+      <h2 id="honesty">The word we are careful with</h2>
+      <p>{CATEGORIES.skin.honesty}</p>
+      <p class="mb-0">
+        The same discipline runs the other way on our
+        <a href="/cooling-towels"> cooling towels</a>: they are engineered
+        synthetics, they work well, and we will never call them organic to
+        borrow the halo from this page.
+      </p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .cluster-list { list-style: none; padding: 0; }
+  .cluster-list li { padding: var(--s3) 0; border-bottom: 1px solid var(--line); font-size: 0.9375rem; }
+  .cluster-list a { font-weight: 650; }
+  .prose ol { padding-left: 1.25rem; max-width: var(--measure); }
+  .prose ol li { margin-bottom: var(--s3); }
+  .honesty-block {
+    background: var(--mist);
+    border-left: 4px solid var(--coral);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: var(--s5);
+  }
+  .honesty-block h2 { margin-top: 0; }
+  .honesty-block p { max-width: var(--measure); }
+</style>

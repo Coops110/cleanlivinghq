@@ -1,0 +1,304 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import Disclosure from '../components/Disclosure.astro';
+import CoolingDiagram from '../components/CoolingDiagram.astro';
+import StepCards from '../components/StepCards.astro';
+import { CATEGORIES, byCategory } from '../lib/products.js';
+import { SITE } from '../lib/site.js';
+import { getCollection } from 'astro:content';
+
+/**
+ * HOMEPAGE — CATEGORY-AGNOSTIC BY DESIGN.
+ *
+ * Read this before editing. The site sells cooling towels today and will sell
+ * other things later. The top of this page therefore says what CleanLivingHQ
+ * *does* — checks claims — not what it currently stocks.
+ *
+ * The live range is pulled from SITE.liveCategory and CATEGORIES, so adding a
+ * second range means adding it to src/lib/products.js and nothing here.
+ * The one hard-coded block is the explainer (diagram + three steps), which is
+ * genuinely specific to evaporative cooling; it is fenced off in its own
+ * section so it can be swapped or dropped without touching anything else.
+ *
+ * DO NOT put a product category into the h1, the title or the meta
+ * description. That is what makes a site need rewriting when it grows.
+ */
+const live = CATEGORIES[SITE.liveCategory];
+const liveProducts = byCategory(SITE.liveCategory);
+const upcoming = Object.values(CATEGORIES).filter((c) => c.slug !== SITE.liveCategory);
+
+const guides = (await getCollection('guides', ({ data }) => !data.noindex))
+  .sort((a, b) => b.data.published.localeCompare(a.data.published))
+  .slice(0, 4);
+
+// 38 characters before " | CleanLivingHQ" is appended — inside the ~42 budget.
+const title = 'Claims Checked Before We Repeat Them';
+const description =
+  'Independent reviews and buying guides that check what is behind a claim — and say plainly when nobody has tested it. Free heat-risk calculator.';
+---
+<BaseLayout title={title} description={description} canonical="/">
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="hero-eyebrow">Independent · Affiliate-funded · Evidence first</p>
+        <h1>Most product claims have <em>nothing</em> behind them. We check.</h1>
+        <p class="hero-lede">
+          "Cools you by twelve degrees." "Kills 99.9% of bacteria." Against what,
+          measured how, by whom? Usually nobody can tell you — and a hundred
+          sites repeat the number anyway. We explain the mechanism, state its
+          limits, and say when a claim is untested.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-accent" href={live.href}>See what we cover</a>
+          <a class="btn btn-on-dark" href="/tools/heat-index">Free heat-risk tool</a>
+        </div>
+        <p class="hero-note">
+          We earn a commission on some links. It never buys a recommendation —
+          <a href="/editorial-policy">here is how we work</a>.
+        </p>
+      </div>
+
+      <ul class="hero-facts">
+        <li><span class="fact-n">1<span class="fact-u">rule</span></span> name the test standard, or report that there isn't one</li>
+        <li><span class="fact-n">0<span class="fact-u">paid</span></span> no payment for a review, ranking or placement</li>
+        <li><span class="fact-n">100<span class="fact-u">%</span></span> of product pages list the drawbacks, not just the pitch</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="pillars" aria-labelledby="cover">
+      <p class="eyebrow">What we cover</p>
+      <h2 id="cover" class="mt-0">Ranges, and what we promise about each</h2>
+      <p class="lede">
+        One range is live. The others are announced, with the standard we will
+        hold them to published before there is anything to buy — so you can hold
+        us to it afterwards.
+      </p>
+      <div class="grid grid-3">
+        {Object.values(CATEGORIES).map((c) => (
+          <article class:list={['cat-card', c.slug === SITE.liveCategory && 'cat-card-live']}>
+            <p class:list={['badge', c.slug === SITE.liveCategory ? 'badge-live' : 'badge-soon']}>
+              {c.slug === SITE.liveCategory ? 'Live now' : 'Coming soon'}
+            </p>
+            <h3><a href={c.href}>{c.name}</a></h3>
+            <p>{c.blurb}</p>
+            <p class="cat-honesty"><strong>Straight answer:</strong> {c.honesty}</p>
+            <p class="mb-0"><a href={c.href}>Read the guide →</a></p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section aria-labelledby="range">
+      <p class="eyebrow">Available now</p>
+      <h2 id="range" class="mt-0">{live.name}</h2>
+      <p class="lede">{live.blurb}</p>
+      <Disclosure />
+      <div class="grid grid-4">
+        {liveProducts.map((p) => <ProductCard product={p} />)}
+      </div>
+      <p class="section-more">
+        <a href="/tools/product-finder">Which one suits you?</a> ·
+        <a href="/compare/cooling-towels">Compare them side by side</a> ·
+        <a href={live.href}>The full guide</a>
+      </p>
+    </section>
+
+    {/*
+      The one range-specific block on this page. Evaporative cooling has a
+      mechanism worth drawing, and no competitor draws it. If the live range
+      ever changes, this section is what gets swapped — everything above and
+      below it is generic.
+    */}
+    <section aria-labelledby="how">
+      <p class="eyebrow">The mechanism</p>
+      <h2 id="how" class="mt-0">Where the cold actually comes from</h2>
+      <p class="lede">
+        Almost every product page in this category asks you to take the cooling
+        on trust. It is not complicated, and it is worth understanding before
+        you spend anything.
+      </p>
+      <CoolingDiagram />
+      <StepCards />
+      <p><a href={live.href}>The full explanation, including what humidity does to it →</a></p>
+    </section>
+
+    <section class="tool-cta" aria-labelledby="tool">
+      <div class="tool-cta-copy">
+        <p class="eyebrow">Free tool</p>
+        <h2 id="tool" class="mt-0">Air temperature does not tell you much</h2>
+        <p>
+          Humidity decides whether your sweat can evaporate at all, which is why
+          28°C in humid air is harder on you than 32°C in dry air. Our
+          calculator combines the two into the heat index, applies the full-sun
+          adjustment most calculators skip, and says what the band means for a
+          working shift.
+        </p>
+        <a class="btn btn-accent" href="/tools/heat-index">Open the heat risk calculator</a>
+      </div>
+    </section>
+
+    <section class="why" aria-labelledby="why">
+      <h2 id="why" class="mt-0">What makes this site different</h2>
+      <div class="grid grid-3">
+        <div>
+          <h3>We quote mechanisms, not numbers</h3>
+          <p>
+            A figure with no stated conditions is unfalsifiable. We explain how
+            something works and where it stops working, so you can predict what
+            you will actually get.
+          </p>
+        </div>
+        <div>
+          <h3>We do not borrow the organic halo</h3>
+          <p>
+            Some of what we sell is engineered synthetic and some will be
+            certified organic. We say which is which, name the certifier, and
+            never let one lend credibility to the other.
+          </p>
+        </div>
+        <div>
+          <h3>We say when to stop shopping</h3>
+          <p>
+            Sometimes the answer is "call for help" or "change the shift, not
+            the kit". Those pages say so before they mention anything you can
+            buy, and they keep saying it afterwards.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="latest">
+      <h2 id="latest">Latest guides</h2>
+      <ul class="guide-list">
+        {guides.map((g) => (
+          <li>
+            <a href={`/guides/${g.id}`}>{g.data.title}</a>
+            <span class="muted"> — {g.data.description}</span>
+          </li>
+        ))}
+      </ul>
+      <p><a href="/guides">All guides →</a></p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  /* ── Hero ────────────────────────────────────────────────
+     Dark band, layered with two soft radial washes so it reads as
+     depth rather than a flat rectangle. Kept in CSS rather than an
+     image: it costs nothing and cannot fail to load in front of
+     the LCP, which is the h1 inside it. */
+  .hero {
+    /* Three washes rather than a flat field: a bright azure bloom top-right,
+       a cyan lift bottom-left, and a warm zest glow behind the headline. All
+       CSS, so there is nothing to load in front of the LCP — which is the h1
+       inside this block. */
+    background:
+      radial-gradient(55rem 32rem at 92% -12%, rgba(11, 106, 224, 0.85), transparent 62%),
+      radial-gradient(38rem 26rem at 2% 108%, rgba(34, 211, 238, 0.28), transparent 64%),
+      radial-gradient(30rem 22rem at 30% 40%, rgba(255, 196, 0, 0.10), transparent 70%),
+      var(--ink);
+    color: #fff;
+    padding: var(--s7) 0 var(--s8);
+    margin-bottom: var(--s8);
+  }
+  .hero-grid { display: grid; gap: var(--s6); grid-template-columns: 1fr; }
+  @media (min-width: 62em) {
+    .hero-grid { grid-template-columns: 1.5fr 1fr; align-items: center; gap: var(--s8); }
+  }
+
+  .hero-eyebrow {
+    font-size: 0.75rem; font-weight: 750;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--cyan); margin-bottom: var(--s4);
+  }
+  .hero h1 { color: #fff; margin-bottom: var(--s4); }
+  .hero h1 em { color: var(--zest); font-style: normal; }
+  .hero-lede {
+    font-size: 1.1875rem; color: var(--on-dark);
+    max-width: 34rem; margin-bottom: var(--s5);
+  }
+  @media (min-width: 48em) { .hero-lede { font-size: 1.3125rem; } }
+
+  .hero-actions { display: flex; flex-direction: column; gap: var(--s3); margin-bottom: var(--s4); }
+  @media (min-width: 30em) { .hero-actions { flex-direction: row; } }
+  .hero-note { font-size: 0.875rem; color: var(--on-dark); margin-bottom: 0; max-width: var(--measure); }
+  .hero-note a { color: #fff; }
+
+  .hero-facts {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; gap: var(--s3);
+  }
+  .hero-facts li {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(34, 211, 238, 0.28);
+    border-radius: var(--radius);
+    padding: var(--s4);
+    font-size: 0.9375rem;
+    color: var(--on-dark);
+  }
+  .fact-n {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.875rem;
+    letter-spacing: -0.03em;
+    color: #fff;
+    line-height: 1.1;
+  }
+  .fact-u {
+    font-size: 0.8125rem; font-weight: 700;
+    color: var(--zest); margin-left: 0.3em;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+
+  /* ── Sections ────────────────────────────────────────── */
+  .section-more { margin-top: var(--s4); max-width: var(--measure); }
+
+  .cat-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--azure);
+    border-radius: var(--radius);
+    padding: var(--s5);
+    box-shadow: var(--shadow);
+  }
+  .cat-card-live { border-left-color: var(--zest); }
+  .cat-card h3 { margin-top: var(--s3); }
+  .cat-card h3 a { color: var(--ink); text-decoration: none; }
+  .cat-card h3 a:hover { color: var(--azure-dark); text-decoration: underline; }
+  .cat-card p { font-size: 0.9375rem; }
+  .cat-honesty {
+    background: var(--mist);
+    border-radius: var(--radius-sm);
+    padding: var(--s3);
+    color: var(--slate);
+  }
+
+  .tool-cta {
+    background:
+      radial-gradient(32rem 22rem at 100% 0%, rgba(34, 211, 238, 0.32), transparent 64%),
+      radial-gradient(24rem 18rem at 0% 100%, rgba(255, 196, 0, 0.16), transparent 66%),
+      var(--azure);
+    color: #fff;
+    border-radius: var(--radius-lg);
+    padding: var(--s6) var(--s5);
+  }
+  .tool-cta h2 { color: #fff; }
+  .tool-cta p { color: #e2f1ff; max-width: var(--measure); }
+  .tool-cta .eyebrow { color: #fff; }
+  .tool-cta .eyebrow::before { background: var(--zest); }
+  @media (min-width: 48em) { .tool-cta { padding: var(--s7) var(--s7); } }
+
+  .why { background: var(--mist); border-radius: var(--radius-lg); padding: var(--s5); }
+  .why h3 { font-size: 1.0625rem; margin-top: 0; }
+  .why p { font-size: 0.9375rem; color: var(--slate); margin-bottom: 0; }
+  @media (min-width: 48em) { .why { padding: var(--s7); } }
+
+  .guide-list { list-style: none; padding: 0; }
+  .guide-list li { padding: var(--s3) 0; border-bottom: 1px solid var(--line); font-size: 0.9375rem; }
+  .guide-list a { font-weight: 650; }
+</style>

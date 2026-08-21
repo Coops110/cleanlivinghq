@@ -1,0 +1,244 @@
+---
+/**
+ * Towel finder.
+ *
+ * Scoring runs client-side over a JSON blob generated from the catalogue at
+ * build time, so the tool cannot drift from src/lib/products.js — add a
+ * product there and it appears here with no edit.
+ *
+ * The whole range is also listed as static HTML below the tool. That is not
+ * redundancy for its own sake: without it, the page's only real content is a
+ * form, which gives a crawler nothing to index and gives a JavaScript-less
+ * visitor nothing at all.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Disclosure from '../../components/Disclosure.astro';
+import { byCategory, NEED_LABELS } from '../../lib/products.js';
+import { PRICES_CONFIRMED, formatPrice } from '../../lib/site.js';
+
+const products = byCategory('cooling');
+
+const data = products.map((p) => ({
+  slug: p.slug,
+  name: p.name,
+  summary: p.summary,
+  image: p.image,
+  price: PRICES_CONFIRMED ? formatPrice(p) : 'Price on release',
+  packSize: p.packSize,
+  bestFor: p.bestFor,
+}));
+
+// Question set. Each option carries the `bestFor` tags it rewards, so the
+// scoring is just tag overlap — simple enough to reason about and to explain
+// to the user, which the result panel does.
+const QUESTIONS = [
+  {
+    id: 'use',
+    legend: 'What will you mainly use it for?',
+    options: [
+      { value: 'outdoor-work', label: 'Working outdoors', tags: ['outdoor-work', 'construction'] },
+      { value: 'gym', label: 'Gym, running or cycling', tags: ['gym', 'running', 'sport'] },
+      { value: 'events', label: 'Festivals, travel or events', tags: ['events', 'travel'] },
+      { value: 'hot-flushes', label: 'Hot flushes', tags: ['hot-flushes'] },
+    ],
+  },
+  {
+    id: 'people',
+    legend: 'How many people need one?',
+    options: [
+      { value: 'one', label: 'Just me', tags: [] },
+      { value: 'two', label: 'Two of us', tags: [] },
+      { value: 'crew', label: 'A crew or family', tags: ['crew', 'family'] },
+    ],
+  },
+  {
+    id: 'visible',
+    legend: 'Does it need to be high-visibility?',
+    options: [
+      { value: 'no', label: 'No', tags: [] },
+      { value: 'yes', label: 'Yes — I work on site', tags: ['construction', 'outdoor-work'] },
+    ],
+  },
+];
+
+const title = 'Which Cooling Towel Do You Need?';
+const description =
+  'Three questions and we will match a cooling towel to how you actually plan to use it — plus why, in plain terms.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical="/tools/product-finder"
+  breadcrumbs={[
+    { name: 'Tools', href: '/tools' },
+    { name: 'Towel finder', href: '/tools/product-finder' },
+  ]}
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="eyebrow">Free tool</p>
+      <h1>Which cooling towel do you need?</h1>
+      <p class="lede">
+        Three questions. We show the match and tell you why, so you can disagree
+        with the reasoning rather than just the answer.
+      </p>
+    </header>
+
+    <Disclosure />
+
+    <form class="finder" id="finder">
+      {QUESTIONS.map((q, i) => (
+        <fieldset class="q">
+          <legend><span class="q-n">{i + 1}</span> {q.legend}</legend>
+          <div class="opts">
+            {q.options.map((o, j) => (
+              <label class="opt">
+                <input type="radio" name={q.id} value={o.value} checked={j === 0}
+                       data-tags={o.tags.join(',')} />
+                <span>{o.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ))}
+    </form>
+
+    <output class="result" id="result" for="finder" aria-live="polite"></output>
+
+    <section aria-labelledby="all">
+      <h2 id="all">The full range</h2>
+      <p class="lede">
+        Listed here too, so the page is useful whether or not the tool above runs.
+      </p>
+      <ul class="all-list">
+        {products.map((p) => (
+          <li>
+            <h3><a href={`/cooling-towels/${p.slug}`}>{p.name}</a></h3>
+            <p>{p.summary}</p>
+            <p class="all-meta">
+              <span class="badge">{p.packSize} {p.packSize === 1 ? 'towel' : 'towels'}</span>
+              {p.bestFor.slice(0, 3).map((b) => <span class="badge">{NEED_LABELS[b] || b}</span>)}
+            </p>
+          </li>
+        ))}
+      </ul>
+      <p><a href="/compare/cooling-towels">Compare the specifications side by side →</a></p>
+    </section>
+  </div>
+</BaseLayout>
+
+<script define:vars={{ PRODUCTS: data }}>
+  const form = document.getElementById('finder');
+  const out = document.getElementById('result');
+
+  function score() {
+    const chosen = [...form.querySelectorAll('input:checked')];
+    const tags = new Set(chosen.flatMap((i) => (i.dataset.tags || '').split(',').filter(Boolean)));
+    const people = form.querySelector('input[name="people"]:checked').value;
+    const hiVis = form.querySelector('input[name="visible"]:checked').value === 'yes';
+
+    return PRODUCTS.map((p) => {
+      const matched = p.bestFor.filter((b) => tags.has(b));
+      let points = matched.length * 2;
+      const reasons = matched.map((m) => m.replace(/-/g, ' '));
+
+      // Pack size is a hard requirement rather than a preference, so it is
+      // weighted well above tag overlap.
+      const want = people === 'one' ? 1 : people === 'two' ? 2 : 4;
+      if (p.packSize === want) { points += 5; reasons.push(`pack of ${p.packSize} suits ${people === 'crew' ? 'a group' : people === 'two' ? 'two people' : 'one person'}`); }
+      else if (p.packSize > want) points += 1;
+
+      if (hiVis && p.slug.includes('workwear')) { points += 6; reasons.push('high-visibility colourway'); }
+      if (!hiVis && p.slug.includes('workwear')) points -= 2;
+
+      return { ...p, points, reasons };
+    }).sort((a, b) => b.points - a.points);
+  }
+
+  function render() {
+    const ranked = score();
+    const top = ranked[0];
+    const alt = ranked[1];
+
+    out.innerHTML = `
+      <div class="result-card">
+        <p class="result-label">Best match</p>
+        <div class="result-body">
+          <img src="${top.image}" alt="" width="800" height="800" loading="lazy" decoding="async" />
+          <div>
+            <h2><a href="/cooling-towels/${top.slug}">${top.name}</a></h2>
+            <p class="result-price">${top.price}</p>
+            <p>${top.summary}</p>
+            <p class="result-why"><strong>Why:</strong> ${top.reasons.length ? top.reasons.join('; ') : 'the most generally useful option for what you described'}.</p>
+            <a class="btn btn-accent" href="/cooling-towels/${top.slug}">See the details</a>
+          </div>
+        </div>
+      </div>
+      <p class="result-alt">
+        Runner-up: <a href="/cooling-towels/${alt.slug}">${alt.name}</a> —
+        ${alt.reasons.length ? alt.reasons.join('; ') : 'a reasonable alternative'}.
+      </p>
+    `;
+  }
+
+  form.addEventListener('change', render);
+  render();
+</script>
+
+<style>
+  .finder { margin-bottom: var(--s5); }
+  .q {
+    background: var(--mist); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: var(--s5); margin-bottom: var(--s4);
+  }
+  .q legend { display: flex; align-items: center; gap: var(--s3); }
+  .q-n {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--azure); color: #fff; font-weight: 800; font-size: 0.9375rem;
+  }
+  .opts { display: grid; gap: var(--s2); }
+  @media (min-width: 40em) { .opts { grid-template-columns: repeat(2, 1fr); } }
+
+  .opt {
+    display: flex; align-items: center; gap: var(--s3);
+    background: #fff; border: 2px solid var(--line);
+    border-radius: var(--radius-sm); padding: var(--s3) var(--s4);
+    font-weight: 500; margin: 0; cursor: pointer; min-height: 50px;
+  }
+  .opt:hover { border-color: var(--line-strong); }
+  .opt input { width: 20px; height: 20px; accent-color: var(--azure); flex: none; margin: 0; }
+  .opt:has(input:checked) { border-color: var(--azure); background: var(--tint); }
+
+  .result { display: block; margin-bottom: var(--s7); }
+  .result :global(.result-card) {
+    background: #fff; border: 1px solid var(--line);
+    border-top: 5px solid var(--zest);
+    border-radius: var(--radius); padding: var(--s5); box-shadow: var(--shadow);
+  }
+  .result :global(.result-label) {
+    font-size: 0.75rem; font-weight: 750; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--flame); margin-bottom: var(--s3);
+  }
+  .result :global(.result-body) { display: grid; gap: var(--s4); grid-template-columns: 1fr; }
+  @media (min-width: 44em) {
+    .result :global(.result-body) { grid-template-columns: 180px 1fr; gap: var(--s5); }
+  }
+  .result :global(.result-body img) {
+    width: 100%; aspect-ratio: 1/1; object-fit: cover;
+    border-radius: var(--radius-sm); background: var(--mist);
+  }
+  .result :global(h2) { margin: 0 0 var(--s2); font-size: 1.375rem; }
+  .result :global(h2 a) { color: var(--ink); text-decoration: none; }
+  .result :global(h2 a:hover) { color: var(--azure-dark); text-decoration: underline; }
+  .result :global(.result-price) { font-weight: 750; margin-bottom: var(--s3); }
+  .result :global(.result-why) { color: var(--slate); font-size: 0.9375rem; }
+  .result :global(.result-alt) { margin-top: var(--s4); font-size: 0.9375rem; color: var(--slate); }
+
+  .all-list { list-style: none; padding: 0; display: grid; gap: var(--s4); }
+  @media (min-width: 46em) { .all-list { grid-template-columns: repeat(2, 1fr); } }
+  .all-list li { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: var(--s5); }
+  .all-list h3 { margin: 0 0 var(--s2); font-size: 1.0625rem; }
+  .all-list p { font-size: 0.9375rem; color: var(--slate); margin-bottom: var(--s3); }
+  .all-meta { display: flex; flex-wrap: wrap; gap: var(--s2); margin-bottom: 0; }
+</style>

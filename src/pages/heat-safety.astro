@@ -1,0 +1,222 @@
+---
+/**
+ * PILLAR PAGE — heat safety.
+ *
+ * This is the highest-value cluster on the site and the reason it exists as a
+ * pillar rather than a blog post. Heat-illness searches are made by people who
+ * need to DO something — recognise a symptom, decide whether to stop work,
+ * plan a shift — and those intents require opening a page. Google cannot
+ * answer them in a SERP snippet the way it answers "what is a cooling towel".
+ *
+ * It also carries the site's duty of care. The product is comfort equipment.
+ * If someone arrives here with a heat-stroke symptom, the page must send them
+ * to emergency care before it mentions a towel, and it does.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import FaqList from '../components/FaqList.astro';
+import { getCollection } from 'astro:content';
+
+const cluster = (await getCollection('guides', ({ data }) => data.pillar === 'heat' && !data.noindex))
+  .sort((a, b) => b.data.published.localeCompare(a.data.published));
+
+const faq = [
+  {
+    q: 'What is the difference between heat exhaustion and heat stroke?',
+    a: 'Heat exhaustion means the body is struggling but still coping: heavy sweating, cool clammy skin, dizziness, headache, nausea, cramps. Heat stroke means thermoregulation has failed: confusion, slurred speech, loss of coordination, seizure or unconsciousness, and often hot skin that has stopped sweating. Heat exhaustion is managed with rest, shade and fluids. Heat stroke is a medical emergency — call 999 or 911 immediately and start cooling while you wait.',
+  },
+  {
+    q: 'What are the warning signs I should stop work immediately?',
+    a: 'Confusion or unusual behaviour, stopping sweating in the heat, vomiting, fainting, or a headache that does not ease with rest and water. Any one of these means stop, get into shade, start cooling and get help. Cramps and heavy sweating alone mean take a proper break — not push through it.',
+  },
+  {
+    q: 'How much should I drink when working in heat?',
+    a: 'The commonly used guidance for sustained work in heat is roughly a cup of water every 15 to 20 minutes, taken steadily rather than in large amounts at once, and not more than about a litre an hour. Drinking to thirst alone tends to under-replace during hard work. If you are sweating heavily for several hours, plain water alone can also leave you short on electrolytes.',
+  },
+  {
+    q: 'Does acclimatisation actually matter?',
+    a: 'It matters more than any piece of equipment. Most serious heat illness at work happens in the first few days on the job or in the first days of a heatwave, before the body has adapted. Adaptation takes roughly one to two weeks of graded exposure, and it is lost again after about a week away. New starters and people returning from leave are the highest-risk group on any site.',
+  },
+  {
+    q: 'Where does a cooling towel fit in?',
+    a: 'Last. Shade, water, rest breaks, pacing and acclimatisation do the real work of preventing heat illness. A cooling towel is comfort equipment that makes a hot shift more bearable and helps you cool down faster on a break. It is a genuine help and it is not protection — it will not make an unsafe shift safe.',
+  },
+];
+
+const title = 'Working Safely in Heat';
+const description =
+  'How to recognise heat exhaustion and heat stroke, what actually prevents them on a hot shift, and where cooling gear genuinely helps.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical="/heat-safety"
+  breadcrumbs={[{ name: 'Heat safety', href: '/heat-safety' }]}
+  faq={faq}
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="eyebrow">Pillar guide</p>
+      <h1>Working safely in heat</h1>
+      <p class="lede">
+        Written for people who work outside and cannot simply go indoors. What
+        the warning signs actually look like, what genuinely reduces risk, and
+        an honest account of how little a cooling towel contributes to the
+        first two.
+      </p>
+    </header>
+
+    <div class="prose">
+      <div class="note note-vet">
+        <span class="note-title">If someone is confused, collapsed or has stopped sweating</span>
+        <p>
+          That is suspected heat stroke and it is a medical emergency. Call 999
+          in the UK or 911 in the US now. While you wait: move them into shade,
+          get their outer clothing off, and cool them aggressively — cold water
+          over the skin, ice packs to the neck, armpits and groin, and air
+          movement across them. Do not wait to see whether they improve.
+        </p>
+      </div>
+
+      <section aria-labelledby="recognise">
+        <h2 id="recognise">Recognising the two stages</h2>
+        <p>
+          Heat illness is a progression, not a single event, and the point of
+          knowing the stages is to intervene at the first one. By the time
+          someone shows the signs in the right-hand column, the situation has
+          already become an emergency.
+        </p>
+
+        <div class="table-scroll">
+          <table>
+            <caption class="sr-only">Comparison of heat exhaustion and heat stroke signs</caption>
+            <thead>
+              <tr>
+                <th scope="col">Sign</th>
+                <th scope="col">Heat exhaustion</th>
+                <th scope="col">Heat stroke</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Mental state</th><td>Tired, irritable, headache</td><td>Confused, slurring, aggressive or unconscious</td></tr>
+              <tr><th scope="row">Skin</th><td>Pale, cool, clammy</td><td>Hot, often red, may be dry</td></tr>
+              <tr><th scope="row">Sweating</th><td>Heavy</td><td>May have stopped</td></tr>
+              <tr><th scope="row">Pulse</th><td>Fast and weak</td><td>Fast and strong</td></tr>
+              <tr><th scope="row">Other</th><td>Cramps, nausea, dizziness</td><td>Vomiting, seizure, collapse</td></tr>
+              <tr><th scope="row">What to do</th><td>Stop, shade, cool, fluids, monitor</td><td>Emergency services now, cool aggressively</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          The single most useful thing on this table is the mental-state row.
+          People are poor at judging their own heat strain, so the reliable
+          signal is usually somebody else noticing that a colleague has gone
+          quiet, is repeating themselves, or is behaving out of character.
+        </p>
+      </section>
+
+      <section aria-labelledby="prevent">
+        <h2 id="prevent">What actually prevents it</h2>
+        <p>
+          In rough order of how much difference each one makes:
+        </p>
+        <ol>
+          <li>
+            <strong>Acclimatisation.</strong> Build exposure over one to two
+            weeks. Most serious cases happen in the first few days, to new
+            starters and to people back from leave.
+          </li>
+          <li>
+            <strong>Rest in genuine shade.</strong> Shade that is still hot and
+            airless barely counts. Air movement is doing at least half the work.
+          </li>
+          <li>
+            <strong>Steady fluid intake.</strong> Roughly a cup every 15 to 20
+            minutes during sustained work, with electrolytes over long, heavily
+            sweating days.
+          </li>
+          <li>
+            <strong>Pacing and scheduling.</strong> Moving the hardest work to
+            the early morning removes more risk than any product can.
+          </li>
+          <li>
+            <strong>Watching each other.</strong> The buddy check is what
+            catches confusion before collapse.
+          </li>
+          <li>
+            <strong>Cooling equipment.</strong> Helpful, genuinely pleasant, and
+            last on this list for a reason.
+          </li>
+        </ol>
+
+        <div class="note note-warn">
+          <span class="note-title">Know the number that matters</span>
+          <p>
+            Air temperature alone is a poor predictor of heat strain, because
+            humidity determines whether your sweat can evaporate at all. The
+            <a href="/tools/heat-index">heat risk calculator</a> combines the
+            two into the heat index and tells you which risk band you are
+            working in.
+          </p>
+        </div>
+      </section>
+
+      <section aria-labelledby="gear">
+        <h2 id="gear">Where cooling gear genuinely helps</h2>
+        <p>
+          It helps most on breaks. Actively cooling during a rest period gets
+          your core temperature down faster than passive rest in shade, which
+          means the break does more and you start the next hour in better shape.
+          Worn during work, an evaporative towel on the neck makes heat more
+          tolerable, which has real value even though it is not protection.
+        </p>
+        <p>
+          What it will not do is extend how long you can safely work. If the
+          only reason a shift feels manageable is the towel, the shift is the
+          problem. See <a href="/cooling-towels">how cooling towels work</a> for
+          the mechanism and its limits, particularly in humid heat.
+        </p>
+      </section>
+
+    </div>
+
+    {cluster.length > 0 && (
+      <section aria-labelledby="cluster">
+        <h2 id="cluster">Guides in this cluster</h2>
+        <ul class="cluster-list">
+          {cluster.map((g) => (
+            <li>
+              <a href={`/guides/${g.id}`}>{g.data.title}</a>
+              <span class="muted"> — {g.data.description}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <div class="prose">
+      <FaqList items={faq} />
+
+      <div class="note">
+        <span class="note-title">Sources and scope</span>
+        <p>
+          This page summarises widely published occupational-health guidance on
+          heat illness for a general audience. It is not medical advice and it
+          does not replace your employer's heat plan or your own risk
+          assessment. In the UK, HSE publishes guidance on working in heat; in
+          the US, OSHA and NIOSH do. Read those for the regulatory position that
+          applies to your site.
+        </p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .cluster-list { list-style: none; padding: 0; }
+  .cluster-list li { padding: var(--s3) 0; border-bottom: 1px solid var(--line); font-size: 0.9375rem; }
+  .cluster-list a { font-weight: 650; }
+  .prose ol { padding-left: 1.25rem; max-width: var(--measure); }
+  .prose ol li { margin-bottom: var(--s3); }
+  table caption { text-align: left; }
+</style>

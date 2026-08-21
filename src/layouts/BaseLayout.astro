@@ -1,0 +1,226 @@
+---
+/**
+ * BaseLayout — every page on the site renders through this.
+ *
+ * It owns the whole <head>: title budget, canonical, robots, Open Graph,
+ * Twitter cards, and the JSON-LD graph. Page-level SEO should be done by
+ * passing props here, not by writing tags into a page.
+ *
+ * TITLE BUDGET. This layout appends " | CleanLivingHQ" — 16 characters —
+ * unless the title already contains "CleanLivingHQ". Google truncates the
+ * displayed title around 60 characters, so KEEP PAGE TITLES TO ABOUT 42.
+ * A title cut mid-phrase never shows the targeting it was written for.
+ * `npm run check:seo` fails the build-check if any rendered title exceeds 60
+ * or any description exceeds 155.
+ */
+import { SITE, GA_ID, LAUNCHED, CONSENT_STORAGE_KEY } from '../lib/site.js';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import ConsentBanner from '../components/ConsentBanner.astro';
+import '../styles/global.css';
+
+const {
+  title,
+  description,
+  /** Path only, e.g. "/towels". Canonical is built from SITE.domain. */
+  canonical = Astro.url.pathname,
+  /**
+   * MUST be a raster. Social scrapers refuse to render an SVG og:image —
+   * you get a valid-looking tag and a blank preview, which is worse than
+   * the generic fallback. Anything not .png/.jpg/.webp falls back below.
+   */
+  image = '/og-default.png',
+  /** 'website' | 'article' | 'product' */
+  ogType = 'website',
+  /** Breadcrumb trail, excluding Home. [{ name, href }] */
+  breadcrumbs = [],
+  /** Extra JSON-LD nodes merged into the @graph. */
+  schema = [],
+  /** [{ q, a }] — MUST also appear as visible text on the page. */
+  faq = [],
+  /** Per-page noindex, on top of the sitewide pre-launch gate. */
+  noindex = false,
+  article = null,
+} = Astro.props;
+
+const fullTitle = title.includes(SITE.name) ? title : `${title} | ${SITE.name}`;
+const path = canonical.replace(/\/$/, '') || '/';
+const canonicalUrl = new URL(path, SITE.domain).toString();
+
+// og:image must be a raster; anything else falls back to the PNG.
+const rasterImage = /\.(png|jpe?g|webp)$/i.test(image) ? image : '/og-default.png';
+const imageUrl = new URL(rasterImage, SITE.domain).toString();
+
+// Pre-launch, the whole site is noindex. See LAUNCHED in src/lib/site.js —
+// this is the single most important switch in the project.
+const robots = (!LAUNCHED || noindex)
+  ? 'noindex, nofollow'
+  : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
+
+const org = {
+  '@type': 'Organization',
+  '@id': `${SITE.domain}/#organization`,
+  name: SITE.name,
+  url: SITE.domain,
+  description: SITE.description,
+  logo: { '@type': 'ImageObject', url: new URL('/apple-touch-icon.png', SITE.domain).toString(), width: 180, height: 180 },
+  email: SITE.email,
+};
+
+const website = {
+  '@type': 'WebSite',
+  '@id': `${SITE.domain}/#website`,
+  url: SITE.domain,
+  name: SITE.name,
+  description: SITE.description,
+  publisher: { '@id': `${SITE.domain}/#organization` },
+  inLanguage: 'en',
+};
+
+const webpage = {
+  '@type': 'WebPage',
+  '@id': `${canonicalUrl}#webpage`,
+  url: canonicalUrl,
+  name: fullTitle,
+  description,
+  isPartOf: { '@id': `${SITE.domain}/#website` },
+  inLanguage: 'en',
+};
+
+// BreadcrumbList always starts at Home, so pages pass only their own trail.
+const crumbList = breadcrumbs.length
+  ? [{
+      '@type': 'BreadcrumbList',
+      '@id': `${canonicalUrl}#breadcrumbs`,
+      itemListElement: [{ name: 'Home', href: '/' }, ...breadcrumbs].map((c, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: c.name,
+        item: new URL(c.href, SITE.domain).toString(),
+      })),
+    }]
+  : [];
+
+// FAQPage markup is only emitted when the page passes `faq`. Every question
+// marked up here MUST also be visible in the page body — marking up questions
+// that are not on the page is a structured data violation, not a shortcut.
+// The <FaqList> component renders from the same array for exactly this reason.
+const faqNode = faq.length
+  ? [{
+      '@type': 'FAQPage',
+      '@id': `${canonicalUrl}#faq`,
+      mainEntity: faq.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    }]
+  : [];
+
+const graph = {
+  '@context': 'https://schema.org',
+  '@graph': [org, website, webpage, ...crumbList, ...faqNode, ...schema],
+};
+
+const isProd = import.meta.env.PROD;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta name="robots" content={robots} />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${SITE.name} — ${SITE.tagline}`} />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:locale:alternate" content="en_US" />
+
+    {article && <meta property="article:published_time" content={article.published} />}
+    {article?.updated && <meta property="article:modified_time" content={article.updated} />}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+
+    <meta name="theme-color" content="#16211d" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <set:html value={`<script type="application/ld+json">${JSON.stringify(graph)}</script>`} />
+
+    {isProd && GA_ID && (
+      <Fragment>
+        {/*
+          Consent Mode v2 defaults, inline and BEFORE gtag.js loads.
+          This ordering is not stylistic: the `consent default` command has to
+          reach dataLayer before the tag initialises, or the tag runs briefly
+          in granted state and sets cookies before the visitor is asked.
+
+          Never replace this with Google's copy-paste snippet. That snippet
+          calls gtag('config') immediately, which is precisely what UK PECR
+          and EU ePrivacy prohibit without prior consent.
+        */}
+        <script is:inline set:html={`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          window.gtag = gtag;
+
+          // Deny everything by default, everywhere. CONSENT_BANNER_SCOPE is
+          // 'all', so no visitor is analytics-tracked before they opt in —
+          // including outside the UK/EEA, where US state privacy laws
+          // increasingly expect an opt-out anyway.
+          gtag('consent', 'default', {
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            analytics_storage: 'denied',
+            functionality_storage: 'granted',
+            security_storage: 'granted',
+            wait_for_update: 500
+          });
+
+          // Re-apply a decision this visitor already made. Wrapped because
+          // localStorage throws outright in some privacy modes rather than
+          // returning null, and an exception here would stop gtag loading.
+          try {
+            var stored = localStorage.getItem('${CONSENT_STORAGE_KEY}');
+            if (stored) {
+              var prefs = JSON.parse(stored);
+              gtag('consent', 'update', {
+                analytics_storage: prefs.analytics ? 'granted' : 'denied'
+              });
+            }
+          } catch (e) {}
+
+          gtag('js', new Date());
+          gtag('config', '${GA_ID}', { anonymize_ip: true });
+        `} />
+        <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>
+      </Fragment>
+    )}
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Nav />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    {isProd && GA_ID && <ConsentBanner />}
+  </body>
+</html>

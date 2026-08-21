@@ -1,0 +1,54 @@
+---
+/**
+ * Renders a FAQ as visible page content from the SAME array passed to
+ * BaseLayout's `faq` prop.
+ *
+ * That sharing is the entire point. FAQPage structured data must match text a
+ * visitor can actually see; marking up questions that are not on the page is a
+ * structured data violation. Passing one array to both places makes the two
+ * physically unable to drift apart.
+ */
+const { items, heading = 'Common questions', id = 'faq' } = Astro.props;
+---
+<section class="faq" aria-labelledby={id}>
+  <h2 id={id}>{heading}</h2>
+  {items.map((item) => (
+    <details class="faq-item">
+      <summary><span>{item.q}</span></summary>
+      <div class="faq-answer"><p>{item.a}</p></div>
+    </details>
+  ))}
+</section>
+
+<style>
+  .faq-item {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    margin-bottom: var(--s3);
+  }
+  .faq-item summary {
+    cursor: pointer;
+    padding: var(--s4);
+    font-weight: 650;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s3);
+    min-height: 48px;
+    list-style: none;
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after {
+    content: '';
+    flex: none;
+    width: 10px; height: 10px;
+    border-right: 2px solid var(--azure);
+    border-bottom: 2px solid var(--azure);
+    transform: rotate(45deg);
+    transition: transform 0.15s ease;
+  }
+  .faq-item[open] summary::after { transform: rotate(-135deg); }
+  .faq-answer { padding: 0 var(--s4) var(--s4); max-width: var(--measure); }
+  .faq-answer p { margin: 0; color: var(--slate); }
+</style>

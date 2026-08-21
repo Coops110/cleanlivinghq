@@ -1,0 +1,161 @@
+---
+/**
+ * Site navigation. Mobile-first: a disclosure button below 52em, a horizontal
+ * bar above it. The menu is plain <button> + JS rather than a details/summary
+ * or checkbox hack, because those two get the ARIA wrong in ways that only
+ * show up in a screen reader.
+ */
+import { SITE } from '../lib/site.js';
+
+const links = [
+  { href: '/cooling-towels', label: 'Cooling towels' },
+  { href: '/heat-safety', label: 'Heat safety' },
+  { href: '/skin', label: 'Skin' },
+  { href: '/guides', label: 'Guides' },
+  { href: '/tools', label: 'Tools' },
+];
+
+const here = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isCurrent = (href) => here === href || here.startsWith(href + '/');
+---
+<header class="site-header">
+  <div class="wrap nav-bar">
+    <a href="/" class="wordmark" aria-label={`${SITE.name} home`}>
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <circle cx="16" cy="16" r="15" fill="none" stroke="currentColor" stroke-width="2" opacity="0.35" />
+        <path d="M16 6c6 3 9 7 9 11s-3 8-9 9c-6-3-9-7-9-11s3-8 9-9z" fill="currentColor" opacity="0.9" />
+      </svg>
+      <span class="wordmark-text">CleanLiving<span class="wordmark-hq">HQ</span></span>
+    </a>
+
+    <button
+      class="nav-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="nav-menu"
+    >
+      <span class="sr-only">Menu</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="26" height="26">
+        <path class="ico-open" d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" />
+        <path class="ico-close" d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" />
+      </svg>
+    </button>
+
+    <nav id="nav-menu" class="nav-menu" aria-label="Primary">
+      <ul>
+        {links.map((l) => (
+          <li>
+            <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s4);
+    min-height: 60px;
+    flex-wrap: wrap;
+  }
+
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s2);
+    color: var(--azure-dark);
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.125rem;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+  }
+  .mark { width: 26px; height: 26px; flex: none; }
+  .wordmark-text { color: var(--ink); }
+  /* --coral is a fill colour, not a text colour (3.3:1). The wordmark is the
+     one documented exception in global.css; everything else uses --flame. */
+  .wordmark-hq { color: var(--flame); }
+
+  .nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-right: calc(var(--s2) * -1);
+    background: none;
+    border: 0;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .nav-toggle .ico-close { display: none; }
+  .nav-toggle[aria-expanded='true'] .ico-open { display: none; }
+  .nav-toggle[aria-expanded='true'] .ico-close { display: block; }
+
+  .nav-menu { display: none; width: 100%; }
+  .nav-menu.is-open { display: block; }
+  .nav-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 var(--s3);
+    display: flex;
+    flex-direction: column;
+  }
+  .nav-menu a {
+    display: block;
+    padding: var(--s3) 0;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-menu li:last-child a { border-bottom: 0; }
+  .nav-menu a[aria-current='page'] { color: var(--azure-dark); }
+
+  @media (min-width: 56em) {
+    .nav-toggle { display: none; }
+    .nav-menu { display: block; width: auto; }
+    .nav-menu ul { flex-direction: row; gap: var(--s4); padding: 0; }
+    .nav-menu a {
+      padding: var(--s2) 0;
+      border-bottom: 2px solid transparent;
+    }
+    .nav-menu a:hover { border-bottom-color: var(--line); }
+    .nav-menu a[aria-current='page'] { border-bottom-color: var(--zest); }
+  }
+</style>
+
+<script>
+  const toggle = document.querySelector('.nav-toggle');
+  const menu = document.getElementById('nav-menu');
+
+  if (toggle && menu) {
+    toggle.addEventListener('click', () => {
+      const open = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!open));
+      menu.classList.toggle('is-open', !open);
+    });
+
+    // Escape closes the menu and returns focus to the button, which is the
+    // behaviour a keyboard user expects from a disclosure.
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+        toggle.setAttribute('aria-expanded', 'false');
+        menu.classList.remove('is-open');
+        toggle.focus();
+      }
+    });
+  }
+</script>

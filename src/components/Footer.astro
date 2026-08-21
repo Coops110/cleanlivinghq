@@ -1,0 +1,157 @@
+---
+/**
+ * NOTE ON HEADING LEVELS: the column headings below are <h2>, deliberately.
+ *
+ * They look like small labels, and the temptation is to make them h4 to match.
+ * Don't. A heading check flags a jump DOWN the tree but never a step back up,
+ * so h2 is the only level that is safe after arbitrary page content. An h3 or
+ * h4 here would skip on any page whose own content stops at h1 or h2 — and
+ * because the footer is on all of them, one wrong level fails the entire site
+ * at once. Style them smaller here; do not demote them.
+ */
+import { SITE, SOCIAL, GA_ID, LAUNCHED } from '../lib/site.js';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <p class="foot-mark">CleanLiving<span>HQ</span></p>
+        <p class="foot-tag">{SITE.tagline}</p>
+        <p class="foot-blurb">
+          Independent reviews and guides. We check what is behind a claim before
+          we repeat it.
+        </p>
+      </div>
+
+      <div>
+        <h2>Shop</h2>
+        <ul>
+          <li><a href="/cooling-towels">Cooling towels</a></li>
+          <li><a href="/skin">Skin &amp; body</a></li>
+          <li><a href="/compare/cooling-towels">Compare towels</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2>Learn</h2>
+        <ul>
+          <li><a href="/guides">Guides</a></li>
+          <li><a href="/heat-safety">Heat safety</a></li>
+          <li><a href="/tools/heat-index">Heat risk calculator</a></li>
+          <li><a href="/tools/product-finder">Towel finder</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2>Site</h2>
+        <ul>
+          <li><a href="/about">About us</a></li>
+          <li><a href="/editorial-policy">Editorial policy</a></li>
+          <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2>Legal</h2>
+        <ul>
+          <li><a href="/terms">Terms &amp; conditions</a></li>
+          <li><a href="/privacy">Privacy policy</a></li>
+          <li><a href="/cookies">Cookie policy</a></li>
+          {GA_ID && <li><button type="button" class="linklike" data-consent-reopen>Cookie settings</button></li>}
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot-social">
+      <h2 class="sr-only">Follow CleanLivingHQ</h2>
+      <a href={SOCIAL.tiktok} rel="me noopener">TikTok</a>
+      <a href={SOCIAL.instagram} rel="me noopener">Instagram</a>
+      <a href={SOCIAL.facebook} rel="me noopener">Facebook</a>
+      <span class="muted">{SOCIAL.handle}</span>
+    </div>
+
+    <div class="foot-legal">
+      <p>
+        <strong>Affiliate disclosure.</strong> CleanLivingHQ earns a commission
+        when you buy through some of the links on this site, at no extra cost to
+        you. It never changes what we recommend or what we say about it.
+        <a href="/affiliate-disclosure">Read the full disclosure</a>.
+      </p>
+      <p>
+        <strong>Not medical advice.</strong> Everything here is general
+        information. If you are unwell in heat, speak to a pharmacist or doctor —
+        and treat suspected heat stroke as an emergency.
+      </p>
+      <p class="foot-copy">
+        &copy; {year} {SITE.name}. All rights reserved.
+        {!LAUNCHED && <span class="badge badge-soon">Pre-launch build</span>}
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--ink);
+    color: #cfd8d3;
+    margin-top: var(--s8);
+    padding: var(--s7) 0 var(--s6);
+    font-size: 0.9375rem;
+  }
+  .foot-grid { display: grid; gap: var(--s6); grid-template-columns: 1fr; }
+  @media (min-width: 34em) { .foot-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 60em) { .foot-grid { grid-template-columns: 1.6fr repeat(4, 1fr); } }
+
+  .site-footer h2 {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #fff;
+    margin: 0 0 var(--s3);
+  }
+  .site-footer ul { list-style: none; margin: 0; padding: 0; }
+  .site-footer li { margin-bottom: var(--s2); }
+  .site-footer a { color: #cfd8d3; text-decoration: none; }
+  .site-footer a:hover { color: #fff; text-decoration: underline; }
+
+  .foot-mark {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.25rem;
+    letter-spacing: -0.03em;
+    color: #fff;
+    margin: 0 0 var(--s1);
+  }
+  .foot-mark span { color: var(--zest); }
+  .foot-tag { color: var(--cyan); font-weight: 600; margin: 0 0 var(--s3); }
+  .foot-blurb { max-width: 26rem; margin: 0; }
+
+  .linklike {
+    background: none; border: 0; padding: 0;
+    color: #cfd8d3; font: inherit; cursor: pointer;
+    text-decoration: underline; text-underline-offset: 0.18em;
+  }
+  .linklike:hover { color: #fff; }
+
+  .foot-social {
+    display: flex; flex-wrap: wrap; gap: var(--s4);
+    padding: var(--s5) 0;
+    margin-top: var(--s6);
+    border-top: 1px solid rgba(255,255,255,0.14);
+  }
+  .foot-social a { font-weight: 600; }
+
+  .foot-legal {
+    border-top: 1px solid rgba(255,255,255,0.14);
+    padding-top: var(--s5);
+    font-size: 0.875rem;
+    color: #a9b6b0;
+  }
+  .foot-legal p { max-width: 46rem; }
+  .foot-legal strong { color: #fff; }
+  .foot-legal a { text-decoration: underline; }
+  .foot-copy { display: flex; align-items: center; gap: var(--s3); flex-wrap: wrap; margin-bottom: 0; }
+</style>

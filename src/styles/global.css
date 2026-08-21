@@ -1,0 +1,349 @@
+/* ═══════════════════════════════════════════════════════════
+   CleanLivingHQ — global stylesheet
+
+   MOBILE FIRST, without exception. Every base rule targets a
+   360px phone; every media query is min-width and adds to it.
+   There is not one max-width query in this file and there should
+   not be — the audience arrives from TikTok and Instagram, which
+   means a phone, in portrait, often on a poor connection.
+
+   TYPEFACES: system stack, deliberately. No webfont, no
+   @font-face, no third-party stylesheet. A webfont here would sit
+   in front of an LCP that is text (the hero h1) and cost
+   render-blocking time for a brand nobody recognises yet. If the
+   brand later needs a real display face, self-host it and preload
+   exactly one weight — never link fonts.googleapis.com.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Colour ───────────────────────────────────────────────
+     MEASURED, NOT GUESSED. Run `node scripts/contrast.mjs` after
+     touching any of these; it prints every ratio, checks each
+     colour in the role it is actually used in, and exits
+     non-zero on a failure.
+
+       --ink          #0b1524   18.31 : 1   body text
+       --slate        #46586f    7.28 : 1   secondary text
+       --azure        #0b6ae0    5.06 : 1   links, headings
+       --azure-dark   #0a52ad    7.44 : 1   link hover
+       --flame        #c2410c    5.18 : 1   accent TEXT
+       --line-strong  #6f90bd    3.28 : 1   control borders (needs 3)
+
+     THREE FILL-ONLY COLOURS. These are bright on purpose and are
+     never text on a light background:
+
+       --zest   #ffc400   1.60 on paper  →  11.46 with --ink on it
+       --cyan   #22d3ee   1.81 on paper  →  10.13 with --ink on it
+       --coral  #ff5a1f   3.12 on paper  →   5.87 with --ink on it
+
+     Each is used as a BACKGROUND with --ink on top, or as a bright
+     mark on the dark hero. If you want an orange or yellow WORD on
+     a light background, use --flame. The contrast script asserts
+     that all three still fail as text, so this cannot drift.
+
+     Button labels: white on --azure is 5.06. --ink on --zest is
+     11.46, which is why the main call to action is a hi-vis yellow
+     button with a dark label rather than a coloured label on white.
+     Never put white on --zest or --cyan — those are 1.60 and 1.81.
+
+     Two border tokens, deliberately. WCAG 1.4.11 governs
+     boundaries a user must perceive to OPERATE a control — input
+     borders, focus rings, toggle state. Decorative rules between
+     cards are exempt. --line is decorative and subtle;
+     --line-strong is for form controls. Never use --line on an
+     input. */
+  --ink: #0b1524;
+  --slate: #46586f;
+  --azure: #0b6ae0;
+  --azure-dark: #0a52ad;
+  --cyan: #22d3ee;
+  --zest: #ffc400;
+  --coral: #ff5a1f;
+  --flame: #c2410c;
+  --paper: #ffffff;
+  --mist: #eff6ff;
+  --tint: #dbeafe;
+  --line: #c5dcf7;
+  --line-strong: #6f90bd;
+  --danger: #b3261e;
+  --zest-tint: #fff6d9;
+  --zest-tint: #ffece4;
+  --on-dark: #c9d6e8;          /* 12.44 : 1 on --ink */
+
+  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-display: ui-sans-serif, system-ui, -apple-system, "Segoe UI Semibold",
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  /* One spacing scale. Reach for these rather than inventing values. */
+  --s1: 0.25rem;  --s2: 0.5rem;  --s3: 0.75rem;  --s4: 1rem;
+  --s5: 1.5rem;   --s6: 2rem;    --s7: 3rem;     --s8: 4.5rem;
+
+  --radius: 14px;
+  --radius-sm: 9px;
+  --radius-lg: 22px;
+  --shadow: 0 1px 2px rgba(11, 106, 224, 0.07), 0 4px 14px rgba(11, 21, 36, 0.07);
+  --shadow-lift: 0 2px 6px rgba(11, 106, 224, 0.1), 0 18px 40px rgba(11, 21, 36, 0.14);
+
+  --wrap: 70rem;
+  --measure: 38rem;   /* ~72 characters — the readable line length for prose */
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  /* 17px base. 16 is the floor at which iOS stops zooming form fields; 17
+     buys readability outdoors without adding many line breaks. */
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;   /* belt and braces against a wide child on a phone */
+}
+
+/* ── Headings ───────────────────────────────────────────────
+   Heading LEVEL is document structure, never a size picker. If a
+   heading looks too big, restyle it here — do not drop a level to
+   get smaller text. Every page needs exactly one h1 and must not
+   skip a level; `npm run check:seo` enforces both. */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  line-height: 1.13;
+  letter-spacing: -0.025em;
+  margin: 0 0 var(--s4);
+  text-wrap: balance;
+}
+h1 { font-size: clamp(2.125rem, 8vw, 3.75rem); font-weight: 820; }
+h2 { font-size: clamp(1.5rem, 5vw, 2.25rem); font-weight: 760; margin-top: var(--s7); }
+h3 { font-size: clamp(1.15rem, 3.6vw, 1.4rem); font-weight: 700; margin-top: var(--s5); }
+h4 { font-size: 1.0625rem; font-weight: 700; margin-top: var(--s5); }
+
+p, ul, ol, dl, table, figure, blockquote { margin: 0 0 var(--s4); }
+p, li { text-wrap: pretty; }
+
+a { color: var(--azure-dark); text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+a:hover { color: var(--azure); }
+
+:focus-visible { outline: 3px solid var(--azure); outline-offset: 2px; border-radius: 3px; }
+
+img, svg, video { max-width: 100%; height: auto; display: block; }
+strong { font-weight: 700; }
+small { font-size: 0.875rem; }
+
+code, kbd {
+  font-family: var(--font-mono); font-size: 0.9em;
+  background: var(--mist); padding: 0.1em 0.35em; border-radius: 4px;
+}
+
+hr { border: 0; border-top: 1px solid var(--line); margin: var(--s7) 0; }
+
+/* ── Layout ─────────────────────────────────────────────── */
+.wrap { width: 100%; max-width: var(--wrap); margin-inline: auto; padding-inline: var(--s4); }
+@media (min-width: 48em) { .wrap { padding-inline: var(--s5); } }
+
+/* Prose is capped at a readable measure even inside a wide wrapper. Applied
+   to text children only, so grids and tables can still use the full width. */
+.prose > p, .prose > ul, .prose > ol,
+.prose > h2, .prose > h3, .prose > h4,
+.prose > blockquote { max-width: var(--measure); }
+.prose ul, .prose ol { padding-left: 1.25rem; }
+.prose li { margin-bottom: var(--s2); }
+.prose li::marker { color: var(--azure); }
+
+section { margin-bottom: var(--s7); }
+@media (min-width: 48em) { section { margin-bottom: var(--s8); } }
+
+/* ── Skip link + screen-reader utility ──────────────────────
+   .sr-only hides text visually while KEEPING it in the
+   accessibility tree. It must stay a 1px clipped box. Do NOT
+   swap it for display:none or visibility:hidden — both drop the
+   element from the accessibility tree, which turns a
+   visually-hidden section heading into no heading at all and
+   reintroduces exactly the heading-level skip it was added to
+   fix. Verify with a real browser (locator.ariaSnapshot()),
+   never with grep: markup alone cannot tell you which you have. */
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+.skip-link {
+  position: absolute; left: var(--s4); top: -100%; z-index: 200;
+  background: var(--ink); color: var(--paper);
+  padding: var(--s3) var(--s4); border-radius: var(--radius-sm);
+  font-weight: 600; transition: top 0.15s ease;
+}
+.skip-link:focus { top: var(--s3); color: var(--paper); }
+
+/* ── Buttons ────────────────────────────────────────────────
+   Minimum 48px tall. That is why nothing here uses tight padding:
+   a thumb on a moving bus is the real input device. */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--s2); min-height: 50px;
+  padding: var(--s3) var(--s5);
+  border: 2px solid transparent; border-radius: var(--radius-sm);
+  font: inherit; font-weight: 660; letter-spacing: -0.01em;
+  text-decoration: none; cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+              transform 0.1s ease, box-shadow 0.15s ease;
+}
+.btn:active { transform: translateY(1px); }
+
+.btn-primary { background: var(--azure); color: #fff; box-shadow: var(--shadow); }
+.btn-primary:hover { background: var(--azure-dark); color: #fff; box-shadow: var(--shadow-lift); }
+
+/* Label is --ink on --coral: 5.11 : 1. Never white on coral — that is 2.9. */
+/* The main call to action. --ink on --zest is 11.46 : 1 — the highest-contrast
+   pairing on the site, and deliberately hi-vis, which suits an audience that
+   works in it. NEVER put white on --zest; that is 1.60. */
+.btn-accent { background: var(--zest); color: var(--ink); box-shadow: var(--shadow); }
+.btn-accent:hover { background: #ffb300; color: var(--ink); box-shadow: var(--shadow-lift); }
+
+/* Secondary fill. --ink on --coral is 5.87 : 1. */
+.btn-coral { background: var(--coral); color: var(--ink); box-shadow: var(--shadow); }
+.btn-coral:hover { background: #f04d10; color: var(--ink); box-shadow: var(--shadow-lift); }
+
+.btn-ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+.btn-ghost:hover { background: var(--mist); color: var(--ink); border-color: var(--slate); }
+
+.btn-on-dark { background: transparent; color: #fff; border-color: rgba(255,255,255,0.45); }
+.btn-on-dark:hover { background: rgba(255,255,255,0.12); color: #fff; border-color: #fff; }
+
+.btn-sm { min-height: 42px; padding: var(--s2) var(--s4); font-size: 0.9375rem; }
+.btn-block { width: 100%; }
+@media (min-width: 30em) { .btn-block { width: auto; } }
+
+/* ── Cards + grids ────────────────────────────────────────── */
+.card {
+  background: #fff; border: 1px solid var(--line);
+  border-radius: var(--radius); padding: var(--s5); box-shadow: var(--shadow);
+}
+
+.grid { display: grid; gap: var(--s4); grid-template-columns: 1fr; }
+@media (min-width: 34em) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 56em) {
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ── Page hero (interior pages) ───────────────────────────── */
+.page-hero {
+  padding: var(--s6) 0 var(--s5);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--s6);
+}
+.eyebrow {
+  display: inline-flex; align-items: center; gap: var(--s2);
+  font-size: 0.75rem; font-weight: 750;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--flame); margin-bottom: var(--s3);
+}
+.eyebrow::before {
+  content: ''; width: 22px; height: 3px;
+  background: var(--zest); border-radius: 2px;
+}
+.page-hero .lede {
+  font-size: 1.1875rem; color: var(--slate);
+  max-width: var(--measure); margin-bottom: 0;
+}
+@media (min-width: 48em) {
+  .page-hero { padding: var(--s7) 0 var(--s6); }
+  .page-hero .lede { font-size: 1.3125rem; }
+}
+
+/* ── Callouts ─────────────────────────────────────────────── */
+.note {
+  border-left: 4px solid var(--azure);
+  background: var(--tint);
+  padding: var(--s4);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  max-width: var(--measure);
+}
+.note-warn { border-left-color: var(--zest); background: var(--zest-tint); }
+.note-vet { border-left-color: var(--danger); background: #fdeceb; }
+.note > :last-child { margin-bottom: 0; }
+.note-title { font-weight: 750; display: block; margin-bottom: var(--s2); }
+
+/* ── Tables ─────────────────────────────────────────────────
+   Any table that can overflow must sit inside .table-scroll. The
+   page body must never scroll sideways on a phone; the table may. */
+.table-scroll {
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  margin-bottom: var(--s5);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: #fff;
+}
+table { border-collapse: collapse; width: 100%; font-size: 0.9375rem; }
+th, td { padding: var(--s3) var(--s4); text-align: left; border-bottom: 1px solid var(--line); }
+thead th { background: var(--mist); font-weight: 750; white-space: nowrap; }
+tbody th { font-weight: 650; }
+tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
+caption { text-align: left; }
+
+/* ── Badges ───────────────────────────────────────────────── */
+.badge {
+  display: inline-block; font-size: 0.6875rem; font-weight: 750;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.3em 0.7em; border-radius: 999px;
+  background: var(--mist); color: var(--slate); border: 1px solid var(--line);
+}
+.badge-soon { background: var(--zest-tint); color: var(--flame); border-color: #f0d795; }
+.badge-live { background: var(--tint); color: var(--azure-dark); border-color: #a9caf5; }
+
+/* ── Affiliate disclosure strip ─────────────────────────────
+   Sits ABOVE the first affiliate link on every page carrying one.
+   Both the FTC Endorsement Guides and ASA/CAP require the
+   disclosure at the point of recommendation, before the link —
+   not in the footer and not behind a "more" toggle. */
+.disclosure {
+  font-size: 0.875rem; color: var(--slate);
+  background: var(--mist); border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: var(--s3) var(--s4); margin-bottom: var(--s5);
+}
+.disclosure strong { color: var(--ink); }
+
+/* ── Forms (used by the tools) ────────────────────────────── */
+label { display: block; font-weight: 650; margin-bottom: var(--s2); }
+input[type='number'], input[type='text'], input[type='email'], select, textarea {
+  width: 100%; min-height: 50px;
+  padding: var(--s3) var(--s4);
+  font: inherit; color: var(--ink); background: #fff;
+  border: 2px solid var(--line-strong);   /* 3.33 : 1 — never use --line here */
+  border-radius: var(--radius-sm);
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  border-color: var(--azure); outline: 3px solid var(--azure); outline-offset: 1px;
+}
+input[type='range'] { width: 100%; accent-color: var(--azure); min-height: 44px; }
+fieldset { border: 0; padding: 0; margin: 0 0 var(--s5); }
+legend { font-weight: 750; padding: 0; margin-bottom: var(--s3); font-size: 1.0625rem; }
+
+/* ── Utilities ────────────────────────────────────────────── */
+.stack > * + * { margin-top: var(--s4); }
+.center { text-align: center; }
+.muted { color: var(--slate); }
+.nowrap { white-space: nowrap; }
+.mt-0 { margin-top: 0; }
+.mb-0 { margin-bottom: 0; }
+.lede { font-size: 1.1875rem; color: var(--slate); max-width: var(--measure); }

@@ -1,0 +1,359 @@
+---
+/**
+ * Heat risk calculator.
+ *
+ * The most valuable page on the site by intent: "what is the heat index",
+ * "is it too hot to work", "is it too hot to ride" are all questions that
+ * REQUIRE opening a page and doing something. Contrast that with "what is a
+ * cooling towel", which Google answers in the SERP and which therefore ranks
+ * without ever earning a click.
+ *
+ * The maths is the NOAA Rothfusz regression with both official adjustments —
+ * the same equation the US National Weather Service uses — implemented client
+ * side so the page stays a static file. The equation is defined in Fahrenheit;
+ * Celsius input is converted in and out rather than refitted, because refitting
+ * it would quietly change the published thresholds.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import FaqList from '../../components/FaqList.astro';
+
+const faq = [
+  {
+    q: 'What is the heat index?',
+    a: 'A single figure combining air temperature and relative humidity to express how hot conditions actually feel to a human body. It exists because humidity determines whether sweat can evaporate, and evaporation is how you shed heat. At 32°C the heat index is around 31°C in dry air and above 41°C at 70% humidity — the same thermometer reading, very different physiological load.',
+  },
+  {
+    q: 'At what heat index is it unsafe to work outside?',
+    a: 'Widely used occupational thresholds put caution from about 27°C (80°F), extreme caution from about 32°C (90°F), danger from about 39°C (103°F) and extreme danger from about 51°C (124°F). These assume shade and light wind — direct sun can add roughly 8°C to the effective figure, and heavy exertion or impermeable PPE shifts every threshold down.',
+  },
+  {
+    q: 'How much does working in direct sun add to the heat index?',
+    a: 'Roughly 8°C, or about 15°F. The heat index is defined for shaded conditions, so a figure calculated from a shade temperature understates what you are actually experiencing in full sun. The toggle in the calculator applies that adjustment, and it frequently moves a shift up a whole risk band.',
+  },
+  {
+    q: 'Does this calculator account for direct sunlight?',
+    a: 'No. The heat index is defined for shaded conditions. Full sun can raise the effective value by roughly 8°C (15°F), so if you are working in direct sun, treat the result as optimistic and move yourself up a risk band.',
+  },
+];
+
+const title = 'Heat Risk Calculator';
+const description =
+  'Turn temperature and humidity into a heat index and a risk band, with the full-sun adjustment applied. Free, no sign-up.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical="/tools/heat-index"
+  breadcrumbs={[
+    { name: 'Tools', href: '/tools' },
+    { name: 'Heat risk calculator', href: '/tools/heat-index' },
+  ]}
+  faq={faq}
+  schema={[{
+    '@type': 'WebApplication',
+    name: 'Heat Risk Calculator',
+    applicationCategory: 'HealthApplication',
+    operatingSystem: 'Any',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'GBP' },
+    description,
+  }]}
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="eyebrow">Free tool</p>
+      <h1>Heat risk calculator</h1>
+      <p class="lede">
+        The thermometer only tells you half the story. Humidity decides whether
+        your sweat can evaporate at all — which is why 28°C in muggy air is
+        harder on you than 32°C in dry air, and why the shade reading alone
+        understates a shift spent in full sun.
+      </p>
+    </header>
+
+    <form class="calc" id="calc" novalidate>
+      <div class="calc-inputs">
+        <fieldset>
+          <legend>Conditions</legend>
+
+          <div class="field">
+            <label for="unit">Units</label>
+            <select id="unit" name="unit">
+              <option value="c" selected>Celsius (°C)</option>
+              <option value="f">Fahrenheit (°F)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="temp">Air temperature <span id="unit-label">(°C)</span></label>
+            <input type="number" id="temp" name="temp" value="30" step="0.5" inputmode="decimal" />
+            <input type="range" id="temp-range" min="10" max="50" step="0.5" value="30"
+                   aria-label="Air temperature slider" />
+          </div>
+
+          <div class="field">
+            <label for="rh">Relative humidity (%)</label>
+            <input type="number" id="rh" name="rh" value="60" min="0" max="100" step="1" inputmode="numeric" />
+            <input type="range" id="rh-range" min="0" max="100" step="1" value="60"
+                   aria-label="Relative humidity slider" />
+          </div>
+
+          <div class="field">
+            <label class="switch" for="sun">
+              <input type="checkbox" id="sun" name="sun" />
+              <span>Working in direct sun</span>
+            </label>
+            <p class="field-note mt-0">
+              The heat index is defined for shade. Full sun adds roughly 8°C to
+              what your body actually experiences.
+            </p>
+          </div>
+
+          <p class="field-note">
+            Not sure of the humidity? Any weather app shows it. Enter the
+            <strong>shade</strong> temperature and use the toggle above — do not
+            enter a temperature you measured in the sun.
+          </p>
+        </fieldset>
+      </div>
+
+      <!-- Results are computed live. aria-live announces the change to a
+           screen reader without moving focus, which would be hostile while
+           someone is still dragging a slider. -->
+      <output class="calc-out" id="out" for="temp rh unit sun" aria-live="polite">
+        <div class="out-card" id="human-card">
+          <h2>Feels like</h2>
+          <p class="out-figure"><span id="hi-value">—</span></p>
+          <p class="out-band" id="hi-band">Enter conditions above</p>
+          <p class="out-advice" id="hi-advice"></p>
+          <p class="out-sun" id="hi-sun" hidden></p>
+        </div>
+      </output>
+    </form>
+
+    <noscript>
+      <div class="note note-warn">
+        <span class="note-title">This calculator needs JavaScript</span>
+        <p class="mb-0">
+          The thresholds are all published below, so you can still read off your
+          risk band from the tables without it.
+        </p>
+      </div>
+    </noscript>
+
+    <div class="prose">
+      <section aria-labelledby="bands">
+        <h2 id="bands">The thresholds</h2>
+        <p>These are the values the calculator uses, published so you can check its working.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th scope="col">Heat index</th><th scope="col">Band</th><th scope="col">What it means</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Below 27°C</th><td>Normal</td><td>No special heat precautions needed.</td></tr>
+              <tr><th scope="row">27–32°C</th><td>Caution</td><td>Fatigue possible with prolonged exposure or activity.</td></tr>
+              <tr><th scope="row">32–39°C</th><td>Extreme caution</td><td>Heat cramps and heat exhaustion possible. Take structured breaks.</td></tr>
+              <tr><th scope="row">39–51°C</th><td>Danger</td><td>Heat exhaustion likely, heat stroke possible. Curtail heavy work.</td></tr>
+              <tr><th scope="row">51°C+</th><td>Extreme danger</td><td>Heat stroke highly likely. Stop outdoor work.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </section>
+
+      <section aria-labelledby="limits">
+        <h2 id="limits">What this does not account for</h2>
+        <ul>
+          <li><strong>Your exertion.</strong> Heavy physical work shifts every threshold downward.</li>
+          <li><strong>PPE.</strong> Impermeable clothing blocks evaporation entirely, which removes your main cooling route.</li>
+          <li><strong>Acclimatisation.</strong> Your first few days in heat carry substantially more risk than your tenth.</li>
+          <li><strong>The individual.</strong> Age, medication, illness and hydration all move the line.</li>
+          <li>
+            <strong>Very dry air.</strong> The regression was fitted over
+            roughly 40–100% humidity. Below about 40% it tends to read high,
+            and the official correction only kicks in below 13%. In genuinely
+            arid heat, treat the figure as indicative and trust the
+            thermometer plus your own state more than the index.
+          </li>
+        </ul>
+        <p>
+          Treat the result as a floor, not a ceiling. What to do about it is in
+          <a href="/heat-safety">working safely in heat</a>, and the warning
+          signs are in
+          <a href="/guides/heat-exhaustion-vs-heat-stroke">heat exhaustion or heat stroke</a>.
+        </p>
+      </section>
+
+      <FaqList items={faq} />
+
+      <div class="note">
+        <span class="note-title">Method and scope</span>
+        <p class="mb-0">
+          Human figures use the NOAA Rothfusz regression with the standard low-
+          humidity and high-humidity adjustments, as used by the US National
+          Weather Service — so this page agrees with the NWS heat index to
+          within a degree across the range the chart publishes. The full-sun
+          adjustment adds the commonly cited 8°C. This is general information,
+          not medical advice.
+        </p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .calc {
+    display: grid; gap: var(--s5); grid-template-columns: 1fr;
+    background: var(--mist); border: 1px solid var(--line);
+    border-radius: var(--radius-lg); padding: var(--s5); margin-bottom: var(--s7);
+  }
+  @media (min-width: 54em) { .calc { grid-template-columns: 1fr 1fr; gap: var(--s6); padding: var(--s6); } }
+
+  .field { margin-bottom: var(--s5); }
+  .field-note { font-size: 0.875rem; color: var(--slate); margin-bottom: 0; }
+  input[type='range'] { margin-top: var(--s2); }
+
+  .calc-out { display: grid; gap: var(--s4); align-content: start; }
+  .switch { display: flex; align-items: center; gap: var(--s3); font-weight: 650; cursor: pointer; min-height: 50px; }
+  .switch input { width: 22px; height: 22px; accent-color: var(--azure); flex: none; margin: 0; }
+  .out-sun { font-size: 0.875rem; color: var(--slate); margin: var(--s3) 0 0; padding-top: var(--s3); border-top: 1px solid var(--line); }
+  .out-sun[hidden] { display: none; }
+  .out-card {
+    background: #fff; border: 1px solid var(--line);
+    border-left: 5px solid var(--line-strong);
+    border-radius: var(--radius); padding: var(--s5);
+    transition: border-left-color 0.2s ease;
+  }
+  .out-card h2 {
+    margin: 0 0 var(--s2); font-size: 0.75rem; font-weight: 750;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--slate);
+  }
+  .out-figure {
+    font-family: var(--font-display); font-size: 2.5rem; font-weight: 820;
+    letter-spacing: -0.03em; line-height: 1.05; margin: 0 0 var(--s2);
+  }
+  .out-band { font-weight: 750; margin: 0 0 var(--s2); }
+  .out-advice { font-size: 0.9375rem; color: var(--slate); margin: 0; }
+
+  /* Band colours are set by data-band. Every one of these is a BORDER and a
+     heading colour, never body text on a tinted background, so the AA text
+     ratios in global.css continue to hold. */
+  .out-card[data-band='ok']     { border-left-color: #1a7f4b; }
+  .out-card[data-band='ok'] .out-band     { color: #14603a; }
+  .out-card[data-band='caution']{ border-left-color: var(--coral); }
+  .out-card[data-band='caution'] .out-band{ color: var(--flame); }
+  .out-card[data-band='high']   { border-left-color: #c2410c; }
+  .out-card[data-band='high'] .out-band   { color: #9a3412; }
+  .out-card[data-band='danger'] { border-left-color: var(--danger); }
+  .out-card[data-band='danger'] .out-band { color: var(--danger); }
+</style>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const unit = $('unit'), temp = $('temp'), rh = $('rh'), sun = $('sun');
+  const tempRange = $('temp-range'), rhRange = $('rh-range');
+
+  /**
+   * NOAA Rothfusz regression, defined in Fahrenheit.
+   *
+   * Below 80°F the regression is not valid, so the NWS uses a simple average
+   * form instead — that branch is not an approximation we invented.
+   */
+  function heatIndexF(T, R) {
+    let hi = 0.5 * (T + 61.0 + (T - 68.0) * 1.2 + R * 0.094);
+    if ((hi + T) / 2 < 80) return hi;
+
+    hi =
+      -42.379 + 2.04901523 * T + 10.14333127 * R
+      - 0.22475541 * T * R - 0.00683783 * T * T
+      - 0.05481717 * R * R + 0.00122874 * T * T * R
+      + 0.00085282 * T * R * R - 0.00000199 * T * T * R * R;
+
+    // Low-humidity adjustment
+    if (R < 13 && T >= 80 && T <= 112) {
+      hi -= ((13 - R) / 4) * Math.sqrt((17 - Math.abs(T - 95)) / 17);
+    }
+    // High-humidity adjustment
+    if (R > 85 && T >= 80 && T <= 87) {
+      hi += ((R - 85) / 10) * ((87 - T) / 5);
+    }
+    return hi;
+  }
+
+  const HUMAN = [
+    { max: 27, band: 'ok', label: 'Normal', advice: 'No special heat precautions needed beyond ordinary sense — drink when thirsty and take normal breaks.' },
+    { max: 32, band: 'caution', label: 'Caution', advice: 'Fatigue is possible with prolonged exposure or activity. Drink steadily and take breaks in shade.' },
+    { max: 39, band: 'caution', label: 'Extreme caution', advice: 'Heat cramps and heat exhaustion are possible. Structure your breaks rather than taking them when you feel like it, and cool actively during them.' },
+    { max: 51, band: 'high', label: 'Danger', advice: 'Heat exhaustion is likely and heat stroke is possible. Curtail heavy work, move it to cooler hours, and watch each other for confusion.' },
+    { max: Infinity, band: 'danger', label: 'Extreme danger', advice: 'Heat stroke is highly likely. Outdoor work should stop. This is not a condition to manage with equipment.' },
+  ];
+
+  const pick = (bands, v) => bands.find((b) => v < b.max);
+
+  function render() {
+    const isC = unit.value === 'c';
+    const t = parseFloat(temp.value);
+    const h = parseFloat(rh.value);
+
+    if (!Number.isFinite(t) || !Number.isFinite(h)) return;
+    const hum = Math.min(100, Math.max(0, h));
+
+    const tF = isC ? t * 9 / 5 + 32 : t;
+    const tC = isC ? t : (t - 32) * 5 / 9;
+
+    const hiF = heatIndexF(tF, hum);
+    const hiC = (hiF - 32) * 5 / 9;
+    const shown = isC ? hiC : hiF;
+
+    // The sun adjustment is applied in Celsius and converted for display, so
+    // the same +8°C is used whichever unit is on screen.
+    const inSun = sun.checked;
+    const adjC = hiC + (inSun ? 8 : 0);
+    const shownAdj = isC ? adjC : adjC * 9 / 5 + 32;
+
+    const hb = pick(HUMAN, adjC);
+    $('hi-value').textContent = `${Math.round(shownAdj)}°${isC ? 'C' : 'F'}`;
+    $('hi-band').textContent = hb.label;
+    $('hi-advice').textContent = hb.advice;
+    $('human-card').dataset.band = hb.band;
+
+    const sunNote = $('hi-sun');
+    if (inSun) {
+      const shadeBand = pick(HUMAN, hiC);
+      sunNote.hidden = false;
+      sunNote.textContent = shadeBand.label === hb.label
+        ? `In shade this would read ${Math.round(shown)}°${isC ? 'C' : 'F'} — same band.`
+        : `In shade this would read ${Math.round(shown)}°${isC ? 'C' : 'F'} — "${shadeBand.label}". Full sun moves you up a band.`;
+    } else {
+      sunNote.hidden = true;
+    }
+  }
+
+  // Switching units converts the value in place, so the reading you typed
+  // stays the reading you meant.
+  let lastUnit = unit.value;
+  unit.addEventListener('change', () => {
+    const v = parseFloat(temp.value);
+    if (Number.isFinite(v)) {
+      const converted = unit.value === 'f' ? v * 9 / 5 + 32 : (v - 32) * 5 / 9;
+      temp.value = Math.round(converted * 2) / 2;
+    }
+    const c = unit.value === 'c';
+    $('unit-label').textContent = c ? '(°C)' : '(°F)';
+    tempRange.min = c ? 10 : 50;
+    tempRange.max = c ? 50 : 122;
+    tempRange.value = temp.value;
+    lastUnit = unit.value;
+    render();
+  });
+
+  // Number field and slider stay in step in both directions.
+  const link = (a, b) => {
+    a.addEventListener('input', () => { b.value = a.value; render(); });
+    b.addEventListener('input', () => { a.value = b.value; render(); });
+  };
+  link(temp, tempRange);
+  link(rh, rhRange);
+  sun.addEventListener('change', render);
+
+  render();
+</script>

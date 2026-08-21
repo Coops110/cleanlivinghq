@@ -1,0 +1,226 @@
+---
+/**
+ * PILLAR PAGE — cooling towels.
+ *
+ * A pillar page's job is to be the one URL that covers the whole topic and to
+ * pass authority down to the guides beneath it. Every guide with
+ * `pillar: 'cooling'` links up here; this page links back down to each of them
+ * from body copy, using the words those pages should rank for.
+ *
+ * The cluster list is generated, so a new guide gains an inbound link the
+ * moment it is added. That is deliberate — a post whose only inbound link is
+ * the blog index earns nothing.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import Disclosure from '../../components/Disclosure.astro';
+import FaqList from '../../components/FaqList.astro';
+import { byCategory, CATEGORIES } from '../../lib/products.js';
+import { getCollection } from 'astro:content';
+
+const products = byCategory('cooling');
+const cluster = (await getCollection('guides', ({ data }) => data.pillar === 'cooling' && !data.noindex))
+  .sort((a, b) => b.data.published.localeCompare(a.data.published));
+
+const faq = [
+  {
+    q: 'How does a cooling towel actually work?',
+    a: 'Evaporation. Water changing from liquid to vapour absorbs a large amount of energy — about 2,260 kilojoules per litre — and it takes that energy from the nearest warm surface, which is your skin. That is the same mechanism as sweating. Snapping the towel forces air through the fabric and brings water to the surface, which is why the snap is not a gimmick.',
+  },
+  {
+    q: 'Why does my cooling towel barely work in humid weather?',
+    a: 'Because evaporation slows down as the air approaches saturation. In humid heat there is less capacity in the air to accept more water vapour, so less water evaporates and less heat is carried away. This is a limit of the physics, not a fault in the towel — and it is why demo videos filmed in dry heat are not representative of a muggy day.',
+  },
+  {
+    q: 'PVA or microfibre — which should I buy?',
+    a: 'PVA holds far more water and releases it slowly, so it cools harder and for longer, but it dries into a stiff board and has to be re-wet before you can even fold it. Microfibre stays soft and packable and is more pleasant to wear, but it dries out faster and cools less. For a work shift, PVA. For a gym bag you open twice a day, microfibre is easier to live with.',
+  },
+  {
+    q: 'How long does the cooling last?',
+    a: 'Any single number here is unreliable, because it depends on air temperature, humidity and airflow. Manufacturers commonly quote one to three hours, measured in conditions they do not publish. The practical answer is that you re-wet it when it stops feeling cold, and that in dry heat with a breeze that will be much longer than in still, humid air.',
+  },
+  {
+    q: 'Do cooling towels contain chemicals or gel?',
+    a: 'A plain evaporative towel does not. It is fabric and water, and the cooling stops when it dries out and restarts when you re-wet it. That is worth knowing because some products in the wider cooling category do use a gel or a phase-change insert, which behave differently and are not rechargeable at a tap.',
+  },
+];
+
+const title = 'Cooling Towels: How They Work';
+const description =
+  'The physics behind evaporative cooling towels, why humidity changes everything, PVA versus microfibre, and how to get the most out of one.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical="/cooling-towels"
+  breadcrumbs={[{ name: 'Cooling towels', href: '/cooling-towels' }]}
+  faq={faq}
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="eyebrow">Pillar guide</p>
+      <h1>Cooling towels, explained by the physics rather than the marketing</h1>
+      <p class="lede">
+        An evaporative towel works for one reason: water leaving fabric carries
+        heat away with it. That is genuinely effective and genuinely limited,
+        and understanding which is which tells you whether one will help you or
+        disappoint you.
+      </p>
+    </header>
+
+    <div class="prose">
+      <section aria-labelledby="how">
+        <h2 id="how">Wet it, wring it, snap it — and why the snap matters</h2>
+        <p>
+          Evaporating a litre of water absorbs roughly 2,260 kilojoules of
+          energy. That energy has to come from somewhere, and it comes from
+          whatever the water is touching — the fabric, and through the fabric,
+          your skin. This is the same process as sweating, which is why a
+          cooling towel feels like it is doing something your own body already
+          does. It is: it is giving evaporation a much larger surface area to
+          work with, right against your neck.
+        </p>
+        <p>
+          The three-step activation is not marketing theatre.
+          <strong>Wetting</strong> loads the fabric.
+          <strong>Wringing</strong> removes the water that would just drip off,
+          because water sitting in the fabric's interior does no cooling.
+          <strong>Snapping</strong> forces air through the weave and pulls water
+          back to the surface, where it can actually evaporate. Skip the snap
+          and you are wearing a wet towel.
+        </p>
+
+        <div class="note">
+          <span class="note-title">Where cooling a body actually works</span>
+          <p>
+            The neck, wrists and inner forearms carry blood close to the skin,
+            so cooling there affects your core faster than cooling your back or
+            chest does. This is why cooling towels are made long and narrow —
+            the shape is chosen for the neck, not for drying you off.
+          </p>
+        </div>
+      </section>
+
+      <section aria-labelledby="humidity">
+        <h2 id="humidity">Humidity is the variable nobody advertises</h2>
+        <p>
+          Evaporation depends on the air's capacity to accept more water vapour.
+          In dry heat that capacity is enormous and an evaporative towel is
+          startlingly effective. In humid heat the air is already close to
+          saturated, evaporation slows, and the same towel does noticeably less.
+        </p>
+        <p>
+          This is the honest answer to almost every disappointed review in this
+          category: the product worked exactly as designed, in conditions where
+          the design has less to give. It is also why we will not quote you a
+          number of degrees. If you want to know what the heat is doing where
+          you are, the
+          <a href="/tools/heat-index">heat risk calculator</a> combines
+          temperature and humidity into the figure that actually predicts heat
+          strain — and tells you when cooling gear stops being enough.
+        </p>
+        <p>
+          The full treatment, including what to do differently in humid heat, is
+          in <a href="/guides/why-cooling-towels-fail-in-humidity">why cooling towels underperform in humidity</a>.
+        </p>
+      </section>
+
+      <section aria-labelledby="materials">
+        <h2 id="materials">PVA and microfibre are different purchases</h2>
+        <p>
+          PVA — polyvinyl alcohol — is a sponge-like synthetic that holds a
+          great deal of water and gives it up slowly. It cools harder and for
+          longer than microfibre, and it dries into a rigid board that must be
+          re-wet before it will even fold. Microfibre holds less, dries faster,
+          and stays soft and packable throughout. Neither is better; they suit
+          different days.
+        </p>
+        <p>
+          Our full breakdown is in
+          <a href="/guides/pva-vs-microfibre-cooling-towels">PVA versus microfibre cooling towels</a>,
+          and the
+          <a href="/compare/cooling-towels">comparison table</a> puts the range
+          side by side on size, pack and material.
+        </p>
+      </section>
+
+      <section aria-labelledby="care">
+        <h2 id="care">Keeping one usable</h2>
+        <p>
+          A cooling towel spends its life damp, which is exactly the condition
+          that grows mildew. Left balled up in a bag it will go sour within
+          days, and once PVA has taken on that smell it is very hard to shift.
+          Rinse it in clean water after use, wring it, and let it dry fully
+          before it is stored — or store it wet on purpose in a sealed
+          container, which is a legitimate approach as long as it is genuinely
+          sealed and used again soon.
+        </p>
+        <p>
+          Full routine, including how to rescue one that has already gone
+          musty: <a href="/guides/how-to-clean-a-cooling-towel">how to clean and store a cooling towel</a>.
+        </p>
+      </section>
+    </div>
+
+    <section aria-labelledby="range">
+      <h2 id="range">The range we cover</h2>
+      <p class="section-lede">
+        Prices are confirmed at launch. These link out to the merchant — we earn
+        a commission if you buy, and it does not change a word above.
+      </p>
+      <Disclosure />
+      <div class="grid grid-4">
+        {products.map((p) => <ProductCard product={p} />)}
+      </div>
+      <p class="section-more">
+        Not sure which? The <a href="/tools/product-finder">towel finder</a>
+        matches one to how you will actually use it.
+      </p>
+    </section>
+
+    {cluster.length > 0 && (
+      <section aria-labelledby="cluster">
+        <h2 id="cluster">Guides in this cluster</h2>
+        <ul class="cluster-list">
+          {cluster.map((g) => (
+            <li>
+              <a href={`/guides/${g.id}`}>{g.data.title}</a>
+              <span class="muted"> — {g.data.description}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <div class="prose">
+      <FaqList items={faq} />
+    </div>
+
+    <section class="honesty-block" aria-labelledby="honesty">
+      <h2 id="honesty">What we will not claim</h2>
+      <p>{CATEGORIES.cooling.honesty}</p>
+      <p class="mb-0">
+        And a cooling towel is comfort equipment, not protection. If you work in
+        heat, the towel is the last line, not the first —
+        <a href="/heat-safety">what actually prevents heat illness</a> covers
+        the rest.
+      </p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .section-lede { color: var(--slate); max-width: var(--measure); }
+  .section-more { margin-top: var(--s4); max-width: var(--measure); }
+  .cluster-list { list-style: none; padding: 0; }
+  .cluster-list li { padding: var(--s3) 0; border-bottom: 1px solid var(--line); font-size: 0.9375rem; }
+  .cluster-list a { font-weight: 650; }
+  .honesty-block {
+    background: var(--mist);
+    border-left: 4px solid var(--coral);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: var(--s5);
+  }
+  .honesty-block h2 { margin-top: 0; }
+  .honesty-block p { max-width: var(--measure); }
+</style>

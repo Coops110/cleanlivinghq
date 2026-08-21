@@ -1,0 +1,138 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE, MERCHANTS, LEGAL } from '../lib/site.js';
+
+const merchants = Object.values(MERCHANTS);
+
+const title = 'Affiliate Disclosure';
+const description =
+  'Which links earn us a commission, how much you pay (the same), and the FTC and ASA rules this page exists to satisfy.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical="/affiliate-disclosure"
+  breadcrumbs={[{ name: 'Affiliate disclosure', href: '/affiliate-disclosure' }]}
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="eyebrow">Advertising disclosure</p>
+      <h1>Affiliate disclosure</h1>
+      <p class="lede">
+        Last updated {LEGAL.lastUpdated}.
+      </p>
+    </header>
+
+    <div class="prose">
+      <div class="note note-warn">
+        <span class="note-title">The short version</span>
+        <p class="mb-0">
+          Some links on this site are affiliate links. If you click one and buy
+          something, the retailer pays us a commission. <strong>You pay exactly
+          the same price.</strong> It does not influence what we recommend or
+          what we say about it.
+        </p>
+      </div>
+
+      <section aria-labelledby="who">
+        <h2 id="who">Who we have a relationship with</h2>
+        {merchants.map((m) => (
+          <div class="merchant">
+            <h3>{m.name}</h3>
+            <p>
+              We are {m.active ? 'an active affiliate' : 'in the process of joining the affiliate programme'} for
+              {' '}{m.name} ({m.url}), and receive {m.commission}.
+            </p>
+            {!m.active && (
+              <p class="muted">
+                No commission is currently being earned from this merchant. This
+                page will be updated the moment that changes.
+              </p>
+            )}
+          </div>
+        ))}
+        <p>
+          If we add a merchant, they get added here. If a relationship ends, it
+          comes off.
+        </p>
+      </section>
+
+      <section aria-labelledby="how">
+        <h2 id="how">How you can tell</h2>
+        <ul>
+          <li>
+            Every page carrying an affiliate link shows a disclosure
+            <strong> above the first link</strong>, not in the footer.
+          </li>
+          <li>
+            Affiliate links carry <code>rel="sponsored nofollow"</code>, the
+            attribute Google requires for commercial links.
+          </li>
+          <li>
+            They open in a new tab and are labelled as affiliate links for
+            screen reader users.
+          </li>
+          <li>
+            We add a tracking parameter that tells the merchant the visit came
+            from us, and which page it came from. It does not identify you.
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="rules">
+        <h2 id="rules">The rules this satisfies</h2>
+        <p>
+          This site is written for readers in both the UK and the US, so it
+          follows both regimes rather than picking the more convenient one.
+        </p>
+        <ul>
+          <li>
+            <strong>United States — FTC Endorsement Guides.</strong> A material
+            connection between an endorser and a seller must be disclosed
+            clearly and conspicuously, at the point of recommendation, in
+            language people understand.
+          </li>
+          <li>
+            <strong>United Kingdom — ASA / CAP Code.</strong> Affiliate
+            marketing falls within the ASA's remit, and the ASA has ruled
+            specifically that a link or discount code on its own does not make
+            the commercial nature clear. A clear "Ad" label is required, which
+            is why our disclosure strips are headed "Ad / affiliate links".
+          </li>
+        </ul>
+        <p>
+          On social media the same applies. Our TikTok, Instagram and Facebook
+          posts carry <strong>#Ad</strong> where there is a commercial
+          relationship, in the caption and visible without tapping "more".
+        </p>
+      </section>
+
+      <section aria-labelledby="not">
+        <h2 id="not">What we do not do</h2>
+        <ul>
+          <li>Accept payment for a favourable review or a ranking position.</li>
+          <li>Take free products in exchange for coverage.</li>
+          <li>Order recommendations by which pays the most commission.</li>
+          <li>Hide the drawbacks of a product we earn from.</li>
+        </ul>
+        <p>
+          The full set of rules is on our
+          <a href="/editorial-policy">editorial policy</a> page.
+        </p>
+      </section>
+
+      <section aria-labelledby="contact">
+        <h2 id="contact">Questions</h2>
+        <p>
+          Email <a href={`mailto:${SITE.email}`}>{SITE.email}</a> if anything
+          here is unclear, or if you think a page is not disclosing properly.
+        </p>
+      </section>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .merchant { border-left: 4px solid var(--azure); padding-left: var(--s4); margin-bottom: var(--s5); max-width: var(--measure); }
+  .merchant h3 { margin-top: 0; }
+</style>

@@ -1,0 +1,130 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE, LEGAL } from '../lib/site.js';
+
+const title = 'About Us';
+const description =
+  'Who runs CleanLivingHQ, how it is funded, and the standard we hold ourselves to when we write about a product.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical="/about"
+  breadcrumbs={[{ name: 'About', href: '/about' }]}
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="eyebrow">About</p>
+      <h1>About CleanLivingHQ</h1>
+      <p class="lede">
+        A small independent site that checks what is behind a product claim
+        before repeating it. The ranges will change over time; that approach
+        will not.
+      </p>
+    </header>
+
+    <div class="prose">
+      <section aria-labelledby="why">
+        <h2 id="why">Why this site exists</h2>
+        <p>
+          Cooling and body-care products are sold on numbers that rarely survive
+          a follow-up question. "Cools you by twelve degrees." For how long, at
+          what humidity, measured how? "99.9% antibacterial." Against which
+          organism, to which test standard, after how many washes? Most of the
+          time nobody can tell you, and the number is repeated across a hundred
+          affiliate sites regardless.
+        </p>
+        <p>
+          We would rather explain how a thing works, state clearly where it
+          stops working, and let you decide. That is a slower way to sell
+          something and a better way to be worth reading twice.
+        </p>
+      </section>
+
+      <section aria-labelledby="how">
+        <h2 id="how">How we are funded</h2>
+        <p>
+          Affiliate commission. When you buy through some of our links, the
+          retailer pays us a percentage, and you pay exactly the same price you
+          would have paid anyway.
+        </p>
+        <p>
+          We think that model is fine as long as two things are true: you always
+          know when a link is commercial, and the commission never decides what
+          we say. Every page carrying an affiliate link says so above the link,
+          not in the footer. The full arrangement is on the
+          <a href="/affiliate-disclosure">affiliate disclosure</a> page, and the
+          rules we write by are on the
+          <a href="/editorial-policy">editorial policy</a> page.
+        </p>
+        <p>
+          We do not accept payment for a favourable review, and we do not take
+          free products in exchange for coverage.
+        </p>
+      </section>
+
+      <section aria-labelledby="cover">
+        <h2 id="cover">What we cover right now</h2>
+        <p>
+          This list grows. The site is deliberately not built around a single
+          product category — what stays constant is the standard each new range
+          has to meet before it gets a buy button.
+        </p>
+        <ul>
+          <li>
+            <strong><a href="/cooling-towels">Cooling towels</a></strong> — the
+            physics, the limits, and the range we are an affiliate for.
+          </li>
+          <li>
+            <strong><a href="/heat-safety">Working safely in heat</a></strong> —
+            the part that is not a shopping decision, and the reason the site is
+            worth reading even if you never buy anything.
+          </li>
+          <li>
+            <strong><a href="/skin">Organic skin and body care</a></strong> —
+            arriving later this year, with the full ingredient list published
+            before any buy button.
+          </li>
+          <li>
+            <strong>More to come.</strong> The site is built so a new range slots
+            in without rebuilding anything — see the
+            <a href="/editorial-policy">editorial policy</a> for the standard any
+            new category has to meet before it gets a buy button.
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="who">
+        <h2 id="who">Who we are</h2>
+        <p>
+          CleanLivingHQ is operated by {LEGAL.legalName}, {
+            LEGAL.entityType === 'sole-trader'
+              ? 'a sole trader'
+              : 'a registered company'
+          }.
+          {LEGAL.address && <span> Our trading address is {LEGAL.address}.</span>}
+        </p>
+        <p>
+          We are not doctors or occupational-health professionals, and we say so
+          on every page where it matters. Where we summarise published guidance —
+          on heat illness, for example — we say where it comes from and what its
+          scope is.
+        </p>
+        <p>
+          Questions, corrections and complaints all go to the same place:
+          <a href={`mailto:${SITE.email}`}>{SITE.email}</a>. If we get something
+          wrong, tell us and we will fix it and say that we did.
+        </p>
+      </section>
+
+      <div class="note">
+        <span class="note-title">Corrections</span>
+        <p class="mb-0">
+          If you find an error, particularly on the heat-safety pages, please
+          email us. We would much rather be corrected than be confidently wrong
+          on a page someone is relying on.
+        </p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

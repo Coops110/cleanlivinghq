@@ -1,0 +1,106 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../lib/site.js';
+
+const title = 'Editorial Policy';
+const description =
+  'The rules we write by: how commission is kept separate from recommendations, and what we will and will not claim.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical="/editorial-policy"
+  breadcrumbs={[{ name: 'Editorial policy', href: '/editorial-policy' }]}
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="eyebrow">How we work</p>
+      <h1>Editorial policy</h1>
+      <p class="lede">
+        Published so you can hold us to it. If a page on this site breaks one of
+        these rules, that is a bug — please tell us.
+      </p>
+    </header>
+
+    <div class="prose">
+      <section aria-labelledby="independence">
+        <h2 id="independence">Commission does not decide recommendations</h2>
+        <ul>
+          <li>We do not accept payment for a favourable review or a ranking position.</li>
+          <li>We do not accept free products in exchange for coverage.</li>
+          <li>
+            Where several products earn us different commission, that difference
+            plays no part in which we recommend, and we will not order a list by
+            what pays best.
+          </li>
+          <li>
+            We publish the drawbacks of products we earn from. Every product page
+            on this site has a "what to know before you buy" section, and it is
+            not decorative.
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="claims">
+        <h2 id="claims">What we will and will not claim</h2>
+        <ul>
+          <li>
+            <strong>We name the standard behind a number.</strong> A performance
+            figure with no test standard, laboratory or conditions attached is
+            reported as an unverified manufacturer claim, in those words.
+          </li>
+          <li>
+            <strong>We do not call synthetics organic.</strong> PVA and
+            microfibre are engineered plastics. They work well. They are not
+            natural products and we will not imply it.
+          </li>
+          <li>
+            <strong>We name certifiers, not adjectives.</strong> For skincare
+            that means COSMOS, Soil Association, Ecocert or USDA Organic with a
+            percentage — not the word "organic" on its own.
+          </li>
+          <li>
+            <strong>We do not make health claims.</strong> We describe mechanisms
+            and summarise published guidance. We do not tell you a product will
+            treat, prevent or cure anything.
+          </li>
+          <li>
+            <strong>We say when the answer is not a product.</strong> On heat
+            illness that means emergency care and a change to the shift, not a
+            product. Those statements stay on the page after we have something
+            to sell you.
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="sources">
+        <h2 id="sources">Sources</h2>
+        <p>
+          Where we summarise external guidance we say so and name the kind of
+          source — occupational-health guidance from HSE, OSHA or NIOSH for
+          heat, for instance. We are summarising for a general audience, not
+          reproducing a clinical document, and we say that on the page too.
+        </p>
+        <p>
+          We do not cite a source we have not read, and we do not repeat a
+          statistic whose origin we cannot trace. If a number is doing real work
+          in an argument and we cannot source it, it comes out.
+        </p>
+      </section>
+
+      <section aria-labelledby="ai">
+        <h2 id="ai">Corrections and updates</h2>
+        <p>
+          Pages carry a published date, and an updated date when they have been
+          revised. If we make a factual error we correct it on the page rather
+          than quietly deleting it.
+        </p>
+        <p>
+          Corrections go to <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+          The heat-safety pages are the ones where being wrong matters most, and
+          we would rather hear about it quickly.
+        </p>
+      </section>
+    </div>
+  </div>
+</BaseLayout>

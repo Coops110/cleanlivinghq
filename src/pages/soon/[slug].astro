@@ -1,0 +1,99 @@
+---
+/**
+ * Detail page for products that are announced but not yet stocked.
+ *
+ * These live at /soon/<slug> rather than under their category, deliberately:
+ * the URL a product will eventually own should not be spent on a page that
+ * cannot be bought. When a product goes live it gets a real category URL and
+ * this page 301s to it, which keeps the eventual money page clean.
+ *
+ * They are indexed. A page crawled for two months before it has anything to
+ * sell ranks on launch day rather than starting from zero.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { PRODUCTS, CATEGORIES, NEED_LABELS } from '../../lib/products.js';
+
+export async function getStaticPaths() {
+  return PRODUCTS.filter((p) => p.status === 'coming-soon').map((p) => ({
+    params: { slug: p.slug },
+    props: { product: p },
+  }));
+}
+
+const { product } = Astro.props;
+const cat = Object.values(CATEGORIES).find((c) => c.slug === product.category)
+  || CATEGORIES[product.category];
+
+const title = product.name;
+const description = product.summary.slice(0, 155);
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={`/soon/${product.slug}`}
+  image={product.image}
+  breadcrumbs={[
+    { name: cat.short, href: cat.href },
+    { name: product.name, href: `/soon/${product.slug}` },
+  ]}
+>
+  <div class="wrap">
+    <div class="pdp">
+      <div>
+        <img src={product.image} alt={product.imageAlt} width="800" height="800" decoding="async" />
+        <p class="ph-note">Placeholder image.</p>
+      </div>
+      <div>
+        <p class="eyebrow"><a href={cat.href}>{cat.short}</a></p>
+        <h1>{product.name}</h1>
+        <p class="badge badge-soon">Not yet available</p>
+        <p class="lede">{product.summary}</p>
+
+        <div class="note">
+          <span class="note-title">There is no buy link on this page</span>
+          <p class="mb-0">
+            Because there is nothing to buy yet. When there is, this page will
+            move to a proper product URL under
+            <a href={cat.href}>{cat.short.toLowerCase()}</a>, and it will carry
+            the full ingredient or specification detail set out on that pillar
+            page before it carries a price.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="prose">
+      <section aria-labelledby="plan">
+        <h2 id="plan">What it is intended to be</h2>
+        <ul>{product.features.map((f) => <li>{f}</li>)}</ul>
+      </section>
+
+      <section aria-labelledby="caveats">
+        <h2 id="caveats">Where we are being careful</h2>
+        <div class="note note-warn">
+          <ul class="mb-0">{product.caveats.map((c) => <li>{c}</li>)}</ul>
+        </div>
+      </section>
+
+      <section aria-labelledby="for">
+        <h2 id="for">Intended for</h2>
+        <ul class="tags">
+          {product.bestFor.map((b) => <li class="badge">{NEED_LABELS[b] || b}</li>)}
+        </ul>
+        <p><a href={cat.href}>Read the {cat.short.toLowerCase()} guide →</a></p>
+      </section>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .pdp { display: grid; gap: var(--s5); grid-template-columns: 1fr; margin-bottom: var(--s7); padding-top: var(--s5); }
+  @media (min-width: 54em) { .pdp { grid-template-columns: 1fr 1fr; gap: var(--s7); align-items: start; } }
+  .pdp img {
+    width: 100%; aspect-ratio: 1 / 1; object-fit: cover;
+    border-radius: var(--radius); border: 1px solid var(--line); background: var(--mist);
+  }
+  .ph-note { font-size: 0.8125rem; color: var(--slate); margin-top: var(--s2); }
+  .eyebrow a { color: inherit; }
+  .tags { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s2); max-width: var(--measure); }
+</style>

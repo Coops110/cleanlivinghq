@@ -1,0 +1,113 @@
+---
+/**
+ * Cookie consent banner. Only rendered when GA_ID is set — see site.js.
+ *
+ * IMPORTANT, LEARNED EXPENSIVELY ON THE SISTER SITE: do not reveal this inside
+ * requestAnimationFrame. rAF is paused in a background tab, so the banner stays
+ * invisible while focus has already been moved into it — the markup looks
+ * perfect and the page is unusable. The reveal below is a plain class toggle on
+ * a timer-free path, and it must be verified in a real browser, not with curl.
+ */
+import { CONSENT_STORAGE_KEY } from '../lib/site.js';
+---
+<div
+  id="consent-banner"
+  class="consent"
+  role="dialog"
+  aria-modal="false"
+  aria-labelledby="consent-title"
+  hidden
+>
+  <div class="consent-inner">
+    <div class="consent-copy">
+      <h2 id="consent-title">Cookies</h2>
+      <p>
+        We use Google Analytics to see which pages are useful. It sets cookies,
+        so we ask first. Decline and nothing analytics-related loads.
+        <a href="/cookies">Cookie policy</a>.
+      </p>
+    </div>
+    <div class="consent-actions">
+      <button type="button" class="btn btn-ghost" data-consent="decline">Decline</button>
+      <button type="button" class="btn btn-primary" data-consent="accept">Accept</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .consent {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 150;
+    background: var(--ink);
+    color: #e4ebe7;
+    border-top: 3px solid var(--coral);
+    padding: var(--s4);
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.25);
+  }
+  .consent[hidden] { display: none; }
+  .consent-inner {
+    max-width: var(--wrap);
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s4);
+  }
+  .consent h2 { font-size: 1rem; margin: 0 0 var(--s2); color: #fff; }
+  .consent p { margin: 0; font-size: 0.9375rem; }
+  .consent a { color: var(--coral); }
+  .consent-actions { display: flex; gap: var(--s3); }
+  .consent-actions .btn { flex: 1; }
+  .consent .btn-ghost { color: #e4ebe7; border-color: rgba(255,255,255,0.35); }
+  .consent .btn-ghost:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+  @media (min-width: 46em) {
+    .consent-inner { flex-direction: row; align-items: center; justify-content: space-between; }
+    .consent-actions .btn { flex: none; }
+  }
+</style>
+
+<script define:vars={{ KEY: CONSENT_STORAGE_KEY }}>
+  const banner = document.getElementById('consent-banner');
+
+  function save(analytics) {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ analytics, ts: Date.now() }));
+    } catch (e) {
+      // Private mode can throw on write. The consent still applies for this
+      // page view; it just will not be remembered. Failing silently is
+      // correct here — an error must not leave the banner stuck open.
+    }
+    if (window.gtag) {
+      window.gtag('consent', 'update', {
+        analytics_storage: analytics ? 'granted' : 'denied',
+      });
+    }
+    banner.hidden = true;
+  }
+
+  function show() {
+    banner.hidden = false;
+  }
+
+  let stored = null;
+  try {
+    stored = localStorage.getItem(KEY);
+  } catch (e) {
+    // Reading can throw too. Treat it as "no decision recorded" and ask.
+  }
+  if (!stored) show();
+
+  banner.querySelector('[data-consent="accept"]').addEventListener('click', () => save(true));
+  banner.querySelector('[data-consent="decline"]').addEventListener('click', () => save(false));
+
+  // Footer "Cookie settings" reopens the banner so a decision can be changed.
+  // Required: consent must be as easy to withdraw as it was to give.
+  document.querySelectorAll('[data-consent-reopen]').forEach((el) =>
+    el.addEventListener('click', () => {
+      show();
+      banner.querySelector('[data-consent="decline"]').focus();
+    })
+  );
+</script>

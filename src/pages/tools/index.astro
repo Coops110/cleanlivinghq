@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const tools = [
+  {
+    href: '/tools/heat-index',
+    name: 'Heat risk calculator',
+    blurb: 'Temperature and humidity into the heat index, with the risk band and what it means for a working shift.',
+    tag: 'Heat safety',
+  },
+  {
+    href: '/tools/product-finder',
+    name: 'Cooling towel finder',
+    blurb: 'Three questions, then a match with the reasoning shown so you can disagree with it.',
+    tag: 'Shopping',
+  },
+  {
+    href: '/compare/cooling-towels',
+    name: 'Towel comparison table',
+    blurb: 'Every towel in the range side by side on material, size, pack and price. Sortable.',
+    tag: 'Shopping',
+  },
+];
+
+const title = 'Tools';
+const description =
+  'Free calculators and finders — heat risk from temperature and humidity, a cooling towel finder, and a full comparison table.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical="/tools"
+  breadcrumbs={[{ name: 'Tools', href: '/tools' }]}
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="eyebrow">Free, no sign-up</p>
+      <h1>Tools</h1>
+      <p class="lede">
+        Things that answer a question rather than sell you something. All of
+        them run in your browser — nothing you enter is sent anywhere.
+      </p>
+    </header>
+
+    <section aria-labelledby="list">
+      <h2 id="list" class="sr-only">Available tools</h2>
+      <ul class="tool-list">
+        {tools.map((t) => (
+          <li class="tool-card">
+            <p class="badge">{t.tag}</p>
+            <h3><a href={t.href}>{t.name}</a></h3>
+            <p>{t.blurb}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .tool-list { list-style: none; padding: 0; display: grid; gap: var(--s4); }
+  @media (min-width: 46em) { .tool-list { grid-template-columns: repeat(2, 1fr); } }
+  .tool-card {
+    background: #fff; border: 1px solid var(--line);
+    border-left: 5px solid var(--zest);
+    border-radius: var(--radius); padding: var(--s5); box-shadow: var(--shadow);
+  }
+  .tool-card h3 { margin: var(--s3) 0 var(--s2); font-size: 1.25rem; }
+  .tool-card h3 a { color: var(--ink); text-decoration: none; }
+  .tool-card h3 a:hover { color: var(--azure-dark); text-decoration: underline; }
+  .tool-card p { margin: 0; color: var(--slate); font-size: 0.9375rem; }
+</style>

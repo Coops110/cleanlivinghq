@@ -1,0 +1,169 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE, LEGAL, PROCESSORS, GA_ID } from '../lib/site.js';
+
+const title = 'Privacy Policy';
+const description =
+  'What data this site collects, who processes it, how long it is kept, and the rights you have over it under UK and EU data protection law.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical="/privacy"
+  breadcrumbs={[{ name: 'Privacy policy', href: '/privacy' }]}
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="eyebrow">Legal</p>
+      <h1>Privacy policy</h1>
+      <p class="lede">Last updated {LEGAL.lastUpdated}.</p>
+    </header>
+
+    <div class="prose">
+      <section aria-labelledby="controller">
+        <h2 id="controller">Who is responsible</h2>
+        <p>
+          {LEGAL.legalName} is the data controller for this website.
+          {LEGAL.address && <span> Our address is {LEGAL.address}.</span>}
+          You can contact us about anything on this page at
+          <a href={`mailto:${LEGAL.contactEmail}`}>{LEGAL.contactEmail}</a>.
+        </p>
+      </section>
+
+      <section aria-labelledby="collect">
+        <h2 id="collect">What we collect</h2>
+
+        {GA_ID ? (
+          <>
+            <h3>Analytics</h3>
+            <p>
+              With your consent, we use Google Analytics 4 to understand which
+              pages are useful. It sets cookies and collects your approximate
+              location, device and browser type, the pages you visit and how you
+              arrived. IP addresses are anonymised.
+            </p>
+            <p>
+              <strong>Nothing analytics-related loads until you accept.</strong>
+              We use Google Consent Mode with all storage denied by default, so
+              declining means no analytics cookies are set at all. You can change
+              your mind at any time using "Cookie settings" in the footer.
+            </p>
+            <p>
+              Legal basis: your consent (UK GDPR Article 6(1)(a) and PECR
+              Regulation 6). Retention: {LEGAL.analyticsRetention}.
+            </p>
+          </>
+        ) : (
+          <>
+            <h3>Analytics</h3>
+            <p>
+              <strong>We do not currently run any analytics on this site.</strong>
+              No analytics cookies are set, no tracking scripts load, and there
+              is no cookie banner because there is nothing to consent to.
+            </p>
+            <p>
+              If that changes, this page and our
+              <a href="/cookies"> cookie policy</a> change with it — they are
+              generated from the same configuration value, so they cannot
+              describe a site we no longer run.
+            </p>
+          </>
+        )}
+
+        <h3>Server logs</h3>
+        <p>
+          Our host, Vercel, keeps standard server logs which may include IP
+          addresses, for security and to keep the site running. Legal basis: our
+          legitimate interest in operating a secure website.
+        </p>
+
+        <h3>Affiliate links</h3>
+        <p>
+          When you click an affiliate link, the retailer receives a parameter
+          telling them the visit came from us and which page it came from. It
+          does not identify you to us. What the retailer then does is governed by
+          their privacy policy, not ours. See our
+          <a href="/affiliate-disclosure"> affiliate disclosure</a>.
+        </p>
+
+        <h3>Email</h3>
+        <p>
+          If you email us, we keep the message so we can reply and so we have a
+          record of the correspondence. Legal basis: legitimate interest in
+          responding to enquiries.
+        </p>
+        <p>
+          We do not run a mailing list, we do not sell data to anyone, and we do
+          not build advertising profiles.
+        </p>
+      </section>
+
+      <section aria-labelledby="processors">
+        <h2 id="processors">Who processes data for us</h2>
+        <div class="table-scroll">
+          <table>
+            <caption class="sr-only">Third parties that process data on our behalf</caption>
+            <thead>
+              <tr><th scope="col">Provider</th><th scope="col">Purpose</th><th scope="col">Location</th></tr>
+            </thead>
+            <tbody>
+              {PROCESSORS.map(([name, purpose, location]) => (
+                <tr><th scope="row">{name}</th><td>{purpose}</td><td>{location}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Where a provider is outside the UK or EEA, transfers rely on the
+          provider's standard contractual clauses or an applicable adequacy
+          decision.
+        </p>
+      </section>
+
+      <section aria-labelledby="rights">
+        <h2 id="rights">Your rights</h2>
+        <p>
+          Under UK and EU data protection law you have the right to access a copy
+          of your data, to have inaccurate data corrected, to have data erased,
+          to restrict or object to processing, to data portability, and to
+          withdraw consent at any time.
+        </p>
+        <p>
+          Email <a href={`mailto:${LEGAL.contactEmail}`}>{LEGAL.contactEmail}</a>.
+          We will respond within one month.
+        </p>
+        <p>
+          If you are in the UK you can complain to the Information
+          Commissioner's Office at <a href="https://ico.org.uk" rel="noopener">ico.org.uk</a>.
+          In the EEA, complain to your national supervisory authority.
+        </p>
+        <h3>If you are in the United States</h3>
+        <p>
+          Several US states give residents the right to know what personal
+          information is collected, to have it deleted, and to opt out of its
+          sale or sharing. <strong>We do not sell or share personal information
+          as those laws define it.</strong> To exercise any right, use the email
+          address above.
+        </p>
+      </section>
+
+      <section aria-labelledby="children">
+        <h2 id="children">Children</h2>
+        <p>
+          This site is not directed at children and we do not knowingly collect
+          data from anyone under 13. If you believe a child has provided us with
+          personal data, contact us and we will delete it.
+        </p>
+      </section>
+
+      <section aria-labelledby="changes">
+        <h2 id="changes">Changes</h2>
+        <p>
+          If this policy changes materially we will update the date at the top.
+          Continued use of the site after a change means you accept the updated
+          policy.
+        </p>
+      </section>
+    </div>
+  </div>
+</BaseLayout>

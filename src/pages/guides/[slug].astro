@@ -1,0 +1,149 @@
+---
+/**
+ * Guide template.
+ *
+ * Two things here are load-bearing for SEO and worth not "tidying":
+ *
+ * 1. `faq` from frontmatter is passed to BaseLayout for FAQPage markup AND
+ *    rendered as visible page content below. Marking up questions that are not
+ *    on the page is a structured data violation. Same array, both places.
+ *
+ * 2. og:image falls back to the site PNG unless the declared image is a
+ *    raster. Social scrapers refuse to render an SVG og:image — you get a
+ *    valid-looking tag and a blank preview.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import FaqList from '../../components/FaqList.astro';
+import { getCollection, render } from 'astro:content';
+import { SITE } from '../../lib/site.js';
+import { CATEGORIES } from '../../lib/products.js';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('guides');
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const d = post.data;
+
+const PILLARS = {
+  cooling: { name: CATEGORIES.cooling.name, href: CATEGORIES.cooling.href },
+  heat: { name: 'Working safely in heat', href: '/heat-safety' },
+  skin: { name: CATEGORIES.skin.name, href: CATEGORIES.skin.href },
+};
+const pillar = PILLARS[d.pillar];
+
+const url = `${SITE.domain}/guides/${post.id}`;
+const image = /\.(png|jpe?g|webp)$/i.test(d.image) ? d.image : '/og-default.png';
+
+const articleSchema = [{
+  '@type': 'Article',
+  '@id': `${url}#article`,
+  headline: d.title,
+  description: d.description,
+  datePublished: d.published,
+  dateModified: d.updated || d.published,
+  image: new URL(image, SITE.domain).toString(),
+  author: { '@id': `${SITE.domain}/#organization` },
+  publisher: { '@id': `${SITE.domain}/#organization` },
+  mainEntityOfPage: { '@id': `${url}#webpage` },
+  isPartOf: { '@id': `${SITE.domain}/#website` },
+  about: pillar.name,
+}];
+
+const fmt = (iso) =>
+  new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+<BaseLayout
+  title={d.seoTitle || d.title}
+  description={d.description}
+  canonical={`/guides/${post.id}`}
+  image={image}
+  ogType="article"
+  noindex={d.noindex}
+  article={{ published: d.published, updated: d.updated }}
+  breadcrumbs={[
+    { name: 'Guides', href: '/guides' },
+    { name: d.title, href: `/guides/${post.id}` },
+  ]}
+  schema={articleSchema}
+  faq={d.faq}
+>
+  <div class="wrap">
+    <article>
+      <header class="page-hero">
+        <p class="eyebrow"><a href={pillar.href}>{pillar.name}</a></p>
+        <h1>{d.title}</h1>
+        <p class="lede">{d.description}</p>
+        <p class="byline">
+          <time datetime={d.published}>Published {fmt(d.published)}</time>
+          {d.updated && <span> · Updated {fmt(d.updated)}</span>}
+        </p>
+      </header>
+
+      <div class="prose guide-body">
+        <Content />
+      </div>
+
+      {d.faq.length > 0 && (
+        <div class="prose">
+          <FaqList items={d.faq} />
+        </div>
+      )}
+
+      <aside class="pillar-back">
+        <h2>Part of a bigger guide</h2>
+        <p>
+          This is one page in our {pillar.name.toLowerCase()} cluster. The
+          pillar page covers the whole topic and links to everything else in it.
+        </p>
+        <a class="btn btn-primary" href={pillar.href}>Read {pillar.name}</a>
+      </aside>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .byline { font-size: 0.875rem; color: var(--slate); margin-top: var(--s4); margin-bottom: 0; }
+  .eyebrow a { color: inherit; }
+
+  /* Markdown output is not wrapped in .prose children selectors, so tables and
+     callouts written in the post body need their own rules here. */
+  .guide-body :global(h2) { margin-top: var(--s7); }
+  .guide-body :global(h3) { margin-top: var(--s5); }
+  .guide-body :global(p),
+  .guide-body :global(ul),
+  .guide-body :global(ol),
+  .guide-body :global(h2),
+  .guide-body :global(h3) { max-width: var(--measure); }
+  .guide-body :global(ul), .guide-body :global(ol) { padding-left: 1.25rem; }
+  .guide-body :global(li) { margin-bottom: var(--s2); }
+  .guide-body :global(li::marker) { color: var(--azure); }
+
+  /* A markdown table can be wider than a phone. Give it its own scroller so
+     the page body never scrolls sideways. */
+  .guide-body :global(table) {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #fff;
+  }
+  @media (min-width: 48em) {
+    .guide-body :global(table) { display: table; white-space: normal; width: 100%; }
+  }
+
+  .guide-body :global(.note) { margin-bottom: var(--s5); }
+
+  .pillar-back {
+    background: var(--mist);
+    border-radius: var(--radius-lg);
+    padding: var(--s5);
+    margin-top: var(--s7);
+  }
+  .pillar-back h2 { margin-top: 0; font-size: 1.25rem; }
+  .pillar-back p { max-width: var(--measure); color: var(--slate); }
+</style>

@@ -1,0 +1,150 @@
+---
+/**
+ * Inline SVG explaining evaporative cooling.
+ *
+ * Inline rather than an <img> for three reasons: it inherits the page's colour
+ * tokens, its text is real text (so it is searchable, translatable and scales
+ * with the user's font settings), and it costs no extra request.
+ *
+ * Every label is a <text> element, not a path. If you ever export this to a
+ * raster for social, remember og:image must be a raster — an SVG og:image
+ * renders as a blank preview.
+ *
+ * The diagram is decorative-plus-informative, so it carries role="img" with a
+ * full <title> and <desc>. Screen reader users get the explanation in prose;
+ * they should not be handed a list of forty unlabelled shapes.
+ */
+const { caption = true } = Astro.props;
+---
+<figure class="diagram">
+  <svg
+    viewBox="0 0 720 400"
+    role="img"
+    aria-labelledby="cd-title cd-desc"
+    class="diagram-svg"
+  >
+    <title id="cd-title">How an evaporative cooling towel removes heat from skin</title>
+    <desc id="cd-desc">
+      A cross-section showing three layers. At the bottom, warm skin. In the
+      middle, damp towel fabric holding water. Above, open air. Arrows show
+      water leaving the fabric as vapour and carrying heat energy upward and
+      away from the skin. A note explains that humid air absorbs less vapour,
+      so the same towel cools less on a humid day.
+    </desc>
+
+    <!-- Air -->
+    <rect x="0" y="0" width="720" height="150" fill="var(--tint)" />
+    <text x="24" y="34" class="d-zone">OPEN AIR</text>
+
+    <!-- Rising vapour: small circles fading as they climb -->
+    <g class="d-vapour">
+      <circle cx="150" cy="110" r="5" opacity="0.20" />
+      <circle cx="163" cy="78" r="4" opacity="0.12" />
+      <circle cx="300" cy="118" r="6" opacity="0.24" />
+      <circle cx="288" cy="84" r="4" opacity="0.13" />
+      <circle cx="452" cy="106" r="5" opacity="0.20" />
+      <circle cx="466" cy="72" r="4" opacity="0.11" />
+      <circle cx="596" cy="120" r="6" opacity="0.22" />
+      <circle cx="584" cy="88" r="4" opacity="0.12" />
+    </g>
+
+    <!-- Heat-out arrows -->
+    <g class="d-arrow-out">
+      <path d="M150 168 L150 118" />
+      <path d="M144 128 L150 116 L156 128" />
+      <path d="M300 168 L300 118" />
+      <path d="M294 128 L300 116 L306 128" />
+      <path d="M452 168 L452 118" />
+      <path d="M446 128 L452 116 L458 128" />
+      <path d="M596 168 L596 118" />
+      <path d="M590 128 L596 116 L602 128" />
+    </g>
+    <text x="620" y="60" class="d-label-out">HEAT LEAVES</text>
+
+    <!-- Towel -->
+    <rect x="0" y="170" width="720" height="86" fill="var(--azure)" />
+    <g class="d-weave">
+      <path d="M0 186 H720 M0 206 H720 M0 226 H720 M0 244 H720" />
+    </g>
+    <g class="d-water">
+      <circle cx="96" cy="196" r="7" /><circle cx="216" cy="232" r="7" />
+      <circle cx="342" cy="200" r="7" /><circle cx="468" cy="234" r="7" />
+      <circle cx="600" cy="198" r="7" /><circle cx="660" cy="230" r="7" />
+    </g>
+    <text x="24" y="212" class="d-zone-on-dark">DAMP TOWEL</text>
+    <text x="24" y="240" class="d-sub-on-dark">water held in the fabric</text>
+
+    <!-- Skin -->
+    <rect x="0" y="256" width="720" height="144" fill="var(--coral)" />
+    <text x="24" y="292" class="d-zone-skin">YOUR SKIN</text>
+    <text x="24" y="318" class="d-sub-skin">warm — this is the energy source</text>
+
+    <!-- Energy drawn up out of the skin -->
+    <g class="d-arrow-in">
+      <path d="M150 300 L150 250" />
+      <path d="M144 260 L150 248 L156 260" />
+      <path d="M300 300 L300 250" />
+      <path d="M294 260 L300 248 L306 260" />
+      <path d="M452 300 L452 250" />
+      <path d="M446 260 L452 248 L458 260" />
+      <path d="M596 300 L596 250" />
+      <path d="M590 260 L596 248 L602 260" />
+    </g>
+    <text x="470" y="360" class="d-label-skin">ENERGY DRAWN UPWARD</text>
+  </svg>
+
+  {caption && (
+    <figcaption>
+      Evaporating water absorbs roughly <strong>2,260 kJ per litre</strong>, and
+      it takes that energy from whatever it is touching. Snapping the towel
+      brings water to the surface where it can evaporate — which is why the snap
+      is not a gimmick. Humid air accepts less vapour, so the same towel cools
+      less on a muggy day.
+    </figcaption>
+  )}
+</figure>
+
+<style>
+  .diagram { margin: 0 0 var(--s5); }
+  .diagram-svg {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--tint);
+    display: block;
+  }
+
+  /* Labels are real text and must stay legible when the SVG is scaled down to
+     a 360px phone. 15–17px in a 720-wide viewBox lands around 8–9 CSS px on a
+     narrow screen, which is why the figcaption carries the same information in
+     full-size prose underneath. */
+  .d-zone { font: 700 15px var(--font-display); fill: var(--azure-dark); letter-spacing: 0.1em; }
+  .d-zone-on-dark { font: 700 17px var(--font-display); fill: #fff; letter-spacing: 0.08em; }
+  .d-sub-on-dark { font: 400 13px var(--font-body); fill: #cfe4f4; }
+  .d-zone-skin { font: 700 17px var(--font-display); fill: var(--ink); letter-spacing: 0.08em; }
+  .d-sub-skin { font: 400 13px var(--font-body); fill: #3d1a0c; }
+  .d-label-out { font: 700 13px var(--font-display); fill: var(--azure-dark); letter-spacing: 0.08em; }
+  .d-label-skin { font: 700 13px var(--font-display); fill: #3d1a0c; letter-spacing: 0.08em; }
+
+  .d-vapour circle { fill: var(--azure); }
+  .d-water circle { fill: #bfe0f5; }
+  .d-weave path { stroke: rgba(255,255,255,0.22); stroke-width: 2; }
+
+  .d-arrow-out path,
+  .d-arrow-in path {
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .d-arrow-out path { stroke: var(--azure); }
+  .d-arrow-in path { stroke: var(--ink); opacity: 0.55; }
+
+  figcaption {
+    font-size: 0.9375rem;
+    color: var(--slate);
+    margin-top: var(--s3);
+    max-width: var(--measure);
+  }
+</style>
