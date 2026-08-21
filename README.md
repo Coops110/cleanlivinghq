@@ -55,7 +55,19 @@ broken, 0 SEO problems, all browser checks passing.
 ## Deploying
 
 Vercel, pointed at this repository root. No Root Directory setting, no build
-command overrides — `vercel.json` carries the config.
+command overrides — `vercel.json` carries the config. Every push to `main`
+deploys.
+
+**Every deployed page currently sends `noindex, nofollow`, and robots.txt
+disallows everything.** That is `LAUNCHED = false` in `src/lib/site.js` working
+as intended, not a broken deploy — see the launch checklist in `CLAUDE.md`.
+
+**Deploys propagate unevenly across the edge.** Checking immediately after a
+push routinely returns 404s or stale HTML for some paths while others are
+already live. Check once, wait, check again; do not conclude a deploy failed
+until a second check disagrees with the first. Do not poll in a loop — a sister
+site tripped Vercel's bot mitigation that way and had scripted requests 403'd
+for hours.
 
 **Do not nest this project inside another repository.** `CLAUDE.md` explains
 why (Astro's bundler walks up the filesystem parsing every `tsconfig.json` it
